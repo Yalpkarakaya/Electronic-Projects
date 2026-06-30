@@ -1,0 +1,718 @@
+/**
+ * @file        Start_Function_V8.2.txt
+ * @brief       MIL-SPEC 1MHz GaN Buck-Boost DC-DC Converter - Initialization
+ * @project     LMG5200 Power Stage Controller
+ * @version     8.2 - MISRA-C:2012 Compliant Military-Grade Refactor
+ * @date        January 2025
+ * @author      Alperen / Claude AI
+ * 
+ * @copyright   Military-Grade Firmware - DO-178C Level B Principles
+ * 
+ * @details     This file initializes all control structures, state machines,
+ *              and protection systems at power-on.
+ *              
+ * @note        MISRA-C:2012 Compliance:
+ *              - Rule 8.9: Objects with block scope declared at lowest level
+ *              - Rule 14.2: Loop counters appropriately bounded
+ *              - Rule 17.7: Return values checked where applicable
+ * 
+ * @warning     This initialization runs ONCE at startup. All structures
+ *              must be fully initialized before main loop execution.
+ */
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 1: SYSTEM STATE INITIALIZATION
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ * RATIONALE: System starts in INIT state. State timer tracks time in each state
+ *            for diagnostic purposes and timeout detection.
+ */
+
+sys_state   = STATE_INIT;
+prev_state  = STATE_INIT;
+state_timer = 0.0f;
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 2: MEASUREMENT INITIALIZATION
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ * RATIONALE: All measurements initialized to zero. First ADC samples will populate
+ *            these values. Zero initialization prevents undefined behavior.
+ */
+
+raw_vin  = 0.0f;
+raw_vout = 0.0f;
+raw_iin  = 0.0f;
+raw_iind = 0.0f;
+raw_iout = 0.0f;
+
+filt_vin  = 0.0f;
+filt_vout = 0.0f;
+filt_iin  = 0.0f;
+filt_iind = 0.0f;
+filt_iout = 0.0f;
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 3: OUTPUT INITIALIZATION
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ * V8.8: 100µs FREEWHEELING DETECTION
+ * İlk 100µs boyunca her iki LO tam iletimde (güvenli mod algılama):
+ *   Buck:  Q1(HO) OFF, Q2(LO) ON → timer_a_duty = DUTY_MIN
+ *   Boost: Q3(LO) ON, Q4(HO) OFF → timer_b_duty = DUTY_MAX
+ * Bu sayede induktör akımı freewheeling yapar, Vin güvenle ölçülür.
+ */
+timer_a_duty = DUTY_MIN;             /* Buck HO OFF → Buck LO ON */
+timer_b_duty = DUTY_MAX;             /* Boost LO ON → Boost HO OFF */
+prev_timer_a = DUTY_MIN;
+prev_timer_b = DUTY_MAX;
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 4: PID CONTROLLER INITIALIZATION
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ * RATIONALE: PID starts with base gains. Error terms zeroed to prevent derivative kick
+ *            at startup. Slew rate starts at slowest value for soft-start protection.
+ */
+
+kp = KP_BASE;
+ki = KI_BASE;
+kd = KD_BASE;
+
+error           = 0.0f;
+prev_error      = 0.0f;
+prev_prev_error = 0.0f;
+error_derivative = 0.0f;
+error_integral   = 0.0f;
+integrator       = 0.0f;
+slew_limit       = SLEW_PRECHARGE;
+
+/* V8.12: Buck mode restored */
+feedforward_buck  = 0.5f;
+feedforward_boost = DUTY_MAX;
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 5: POWER TRACKING INITIALIZATION
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ */
+
+pin_power  = 0.0f;
+pout_power = 0.0f;
+efficiency = 0.0f;
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 6: HISTORY BUFFER INITIALIZATION
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ * RATIONALE: Circular buffer starts empty. All samples zeroed to prevent garbage values
+ *            from affecting initial trend calculations.
+ */
+
+history.head  = 0;
+history.count = 0;
+
+/* [CRITICAL FIX C06]: Explicit loop bound with HISTORY_DEPTH constant */
+{
+    int i;
+    for (i = 0; i < (int)HISTORY_DEPTH; i++)
+    {
+        history.vin[i]  = 0.0f;
+        history.vout[i] = 0.0f;
+        history.iin[i]  = 0.0f;
+        history.iind[i] = 0.0f;
+        history.iout[i] = 0.0f;
+    }
+}
+
+history.vin_mean  = 0.0f;
+history.vin_min   = 0.0f;
+history.vin_max   = 0.0f;
+history.vout_mean = 0.0f;
+history.vout_min  = 0.0f;
+history.vout_max  = 0.0f;
+history.iind_mean = 0.0f;
+history.iind_min  = 0.0f;
+history.iind_max  = 0.0f;
+history.vout_delta_sum = 0.0f;
+history.iind_delta_sum = 0.0f;
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 7: BEHAVIORAL ANALYSIS INITIALIZATION
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ * RATIONALE: System starts with STABLE trend assumption. Oscillation detection starts
+ *            fresh with no prior sign changes. Behavior score starts at EXCELLENT.
+ */
+
+behavior.vout_trend      = TREND_STABLE;
+behavior.iind_trend      = TREND_STABLE;
+behavior.vout_trend_rate = 0.0f;
+behavior.iind_trend_rate = 0.0f;
+
+behavior.vout_derivative          = 0.0f;
+behavior.vout_derivative_filtered = 0.0f;
+behavior.sign_changes             = 0;
+behavior.prev_sign                = 0;
+behavior.osc_timer                = 0.0f;
+behavior.oscillation_detected     = 0;
+behavior.oscillation_frequency    = 0.0f;
+behavior.oscillation_amplitude    = 0.0f;
+
+/* Frequency bins initialization */
+{
+    int i;
+    for (i = 0; i < (int)FREQ_BIN_COUNT; i++)
+    {
+        behavior.freq_bins[i] = 0.0f;
+    }
+}
+behavior.dominant_bin       = 0;
+behavior.dominant_magnitude = 0.0f;
+
+/* Behavior scoring initialization */
+behavior.behavior_score = BEHAVIOR_EXCELLENT;
+{
+    int i;
+    for (i = 0; i < 8; i++)
+    {
+        behavior.score_history[i] = BEHAVIOR_EXCELLENT;
+    }
+}
+behavior.score_index   = 0;
+behavior.score_average = (float)BEHAVIOR_EXCELLENT;
+
+behavior.damping_factor = 1.0f;
+behavior.recovery_timer = 0.0f;
+
+behavior.settling_time     = 0.0f;
+behavior.overshoot_percent = 0.0f;
+behavior.steady_state_error = 0.0f;
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 8: PREDICTIVE CONTROLLER INITIALIZATION
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ * RATIONALE: Model parameters initialized to nominal values. Predictions start at
+ *            target values. Confidence starts at minimum until model is validated.
+ */
+
+predictor.model_L          = L_INDUCTANCE;
+predictor.model_C          = C_OUTPUT;
+predictor.model_R          = R_LOAD_NOMINAL;
+predictor.model_confidence = PRED_CONFIDENCE_MIN;
+
+/* Prediction arrays initialization */
+{
+    int i;
+    for (i = 0; i < (int)PREDICTION_HORIZON; i++)
+    {
+        predictor.pred_vout[i]          = VOUT_TARGET;
+        predictor.pred_iind[i]          = 0.0f;
+        predictor.pred_duty[i]          = 0.5f;
+        predictor.optimal_trajectory[i] = 0.5f;
+    }
+}
+
+predictor.optimal_duty     = 0.5f;
+predictor.cost_current     = 0.0f;
+predictor.cost_predicted   = 0.0f;
+predictor.cost_improvement = 0.0f;
+
+predictor.pred_error_sum   = 0.0f;
+predictor.pred_error_count = 0.0f;
+predictor.pred_accuracy    = 0.5f;
+
+predictor.dcm_risk   = 0.0f;
+predictor.dcm_margin = 10.0f;
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 9: SCENARIO ENGINE INITIALIZATION
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ * RATIONALE: System starts in NORMAL scenario with base PID gains. Scenario blending
+ *            starts at 1.0 (no transition in progress).
+ */
+
+scenario.current_scenario  = SCENARIO_NORMAL;
+scenario.previous_scenario = SCENARIO_NORMAL;
+scenario.scenario_blend    = 1.0f;
+scenario.blend_timer       = 0.0f;
+
+scenario.active_kp         = KP_BASE;
+scenario.active_ki         = KI_BASE;
+scenario.active_kd         = KD_BASE;
+scenario.active_slew       = SLEW_NORMAL;
+scenario.active_iind_limit = IIND_MAX_STEADY;
+
+scenario.high_vin_detected   = 0;
+scenario.low_vin_detected    = 0;
+scenario.heavy_load_detected = 0;
+scenario.light_load_detected = 0;
+scenario.osc_detected        = 0;
+scenario.dcm_risk_detected   = 0;
+
+scenario.strategy_confidence = 0.5f;
+scenario.strategy_timer      = 0.0f;
+scenario.strategy_changes    = 0;
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 10: SOFT-START CONTROLLER INITIALIZATION
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ * RATIONALE: Soft-start begins in INIT phase. All timers zeroed. Target duties will be
+ *            calculated based on measured Vin during MEASURE phase.
+ */
+
+ss.phase       = SS_PHASE_INIT;
+ss.phase_timer = 0.0f;
+ss.total_timer = 0.0f;
+
+/* Vin samples array initialization */
+{
+    int i;
+    for (i = 0; i < 64; i++)
+    {
+        ss.vin_samples[i] = 0.0f;
+    }
+}
+ss.vin_sample_count = 0;
+ss.vin_measured     = 0.0f;
+ss.vin_variance     = 0.0f;
+ss.vin_stability    = 0.0f;
+
+ss.system_response      = 0.0f;
+ss.system_time_constant = 0.001f;
+ss.system_damping       = 0.7f;
+ss.load_estimate        = R_LOAD_NOMINAL;
+
+/* V8.12: Mod başlangıçta belirsiz - soft-start'ta belirlenecek */
+ss.operating_mode = MODE_BOOST;  // Güvenli başlangıç değeri
+
+/* V8.12: Buck duty fields restored */
+ss.duty_buck_start   = DUTY_MIN;
+ss.duty_buck_target  = 0.5f;      /* Buck mode target: Vout/Vin */
+ss.duty_buck_current = DUTY_MIN;
+
+ss.duty_boost_start   = DUTY_MIN;   /* TITAN: Boost LO OFF başla */
+ss.duty_boost_target  = DUTY_MIN;   /* Boost OFF hedefle */
+ss.duty_boost_current = DUTY_MIN;   /* TITAN: Güvenli başlangıç */
+
+ss.ramp_rate_slow    = 0.0f;
+ss.ramp_rate_fast    = 0.0f;
+ss.ramp_rate_settle  = 0.0f;
+ss.ramp_rate_current = 0.0f;
+
+ss.pid_blend_factor  = 0.0f;
+ss.sigmoid_progress  = 0.0f;
+
+ss.integrator_seed  = 0.0f;
+ss.integrator_blend = 0.0f;
+
+ss.vout_at_start    = 0.0f;
+ss.vout_at_precharge = 0.0f;
+ss.vout_at_ramp_end = 0.0f;
+ss.vout_peak        = 0.0f;
+ss.vout_settle      = 0.0f;
+
+ss.iind_limit_active   = SS_IIND_LIMIT_MEASURE;
+ss.iind_peak_during_ss = 0.0f;
+
+ss.complete    = 0;
+ss.success     = 0;
+ss.final_error = 0.0f;
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 11: DCM PREVENTION INITIALIZATION
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ * RATIONALE: Minimum current tracking starts at 10A (well above DCM threshold) to
+ *            prevent false DCM detection during startup.
+ */
+
+dcm_prev.iind_minimum          = 10.0f;
+dcm_prev.iind_minimum_filtered = 10.0f;
+
+dcm_prev.dcm_detected  = 0;
+dcm_prev.dcm_imminent  = 0;
+dcm_prev.dcm_margin    = 10.0f;
+
+dcm_prev.duty_boost_request = 0.0f;
+dcm_prev.prevention_active  = 0;
+dcm_prev.prevention_cycles  = 0;
+
+dcm_prev.dcm_events     = 0;
+dcm_prev.dcm_total_time = 0.0f;
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 12: THERMAL PREDICTIVE LIMITER INITIALIZATION (LMG5200 BASED)
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ * RATIONALE: All thermal protection starts inactive. Current buffer zeroed for clean
+ *            slope calculation from first samples.
+ */
+
+/* Thermal timer */
+thermal_limiter.overcurrent_timer    = 0.0f;
+thermal_limiter.timer_active         = 0;
+thermal_limiter.thermal_clamp_active = 0;
+thermal_limiter.time_in_clamp        = 0.0f;
+
+/* Peak current protection */
+thermal_limiter.peak_warning  = 0;
+thermal_limiter.peak_absolute = 0;
+thermal_limiter.peak_value    = 0.0f;
+
+/* Predictive slope calculation - current buffer */
+{
+    int i;
+    for (i = 0; i < (int)SLOPE_BUFFER_SIZE; i++)
+    {
+        thermal_limiter.current_buffer[i] = 0.0f;
+    }
+}
+thermal_limiter.buffer_index          = 0;
+thermal_limiter.buffer_filled         = 0;
+thermal_limiter.di_dt_raw             = 0.0f;
+thermal_limiter.di_dt_filtered        = 0.0f;
+thermal_limiter.projected_time_to_safe = 0.0f;
+thermal_limiter.prediction_valid      = 0;
+thermal_limiter.hold_reduction        = 0;
+
+/* Duty modulation */
+thermal_limiter.duty_reduction_request = 0.0f;
+thermal_limiter.duty_target            = 0.0f;
+thermal_limiter.modulation_active      = 0;
+
+/* Soft recovery */
+thermal_limiter.soft_recovery_active = 0;
+thermal_limiter.recovery_duty        = 0.0f;
+thermal_limiter.recovery_timer       = 0.0f;
+
+/* Statistics */
+thermal_limiter.overcurrent_events     = 0;
+thermal_limiter.peak_events            = 0;
+thermal_limiter.total_overcurrent_time = 0.0f;
+
+/* V8.14: Slew damping for 4-phase protection */
+thermal_limiter.slew_damping = 1.0f;  // Normal slew rate
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 13: PREDICTION ENGINE INITIALIZATION (V7.1)
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ * RATIONALE: Prediction buffers start at target/zero values. Buffer not marked as filled
+ *            until sufficient samples collected.
+ */
+
+/* Circular buffers initialization */
+{
+    int i;
+    for (i = 0; i < (int)PRED_BUFFER_SIZE; i++)
+    {
+        pred.i_buffer[i]    = 0.0f;
+        pred.vin_buffer[i]  = 0.0f;    /* Will be populated by first measurement */
+        pred.vout_buffer[i] = VOUT_TARGET;
+    }
+}
+pred.buffer_index  = 0;
+pred.buffer_filled = 0;
+
+/* Derivatives */
+pred.di_dt   = 0.0f;
+pred.dvin_dt = 0.0f;
+pred.dvout_dt = 0.0f;
+pred.d2i_dt2  = 0.0f;
+pred.d2vin_dt2 = 0.0f;
+pred.di_dt_filtered   = 0.0f;
+pred.dvin_dt_filtered = 0.0f;
+pred.dvout_dt_filtered = 0.0f;
+
+/* Predictions */
+pred.i_predicted_10us    = 0.0f;
+pred.i_predicted_30us    = 0.0f;
+pred.i_predicted_50us    = 0.0f;
+pred.vin_predicted_20us  = 0.0f;    /* Will be populated by first measurement */
+pred.vout_predicted_10us = VOUT_TARGET;
+
+/* Time estimates */
+pred.time_to_safe_zone         = 0.0f;
+pred.time_to_peak              = 0.0f;
+pred.projected_peak_value      = 0.0f;
+pred.total_overcurrent_time_est = 0.0f;
+
+/* Intervention decision */
+pred.natural_return_ok     = 1;
+pred.intervention_needed   = 0;
+pred.intervention_strength = 0.0f;
+pred.intervention_type     = 0;
+
+/* Vin analysis */
+pred.vin_slew_class          = 0;
+pred.vin_step_detected       = 0;
+pred.vin_step_magnitude      = 0.0f;
+pred.feedforward_boost_active = 0;
+
+/* Vout oscillation */
+pred.vout_amplitude     = 0.0f;
+pred.vout_frequency_est = 0.0f;
+pred.vout_dc_offset     = VOUT_TARGET;
+pred.oscillation_type   = 0;
+pred.zero_crossings     = 0;
+
+/* Adaptive PID */
+pred.recommended_kp       = KP_BASE;
+pred.recommended_ki       = KI_BASE;
+pred.recommended_kd       = KD_BASE;
+pred.pid_update_pending   = 0;
+pred.pid_adaptation_timer = 0.0f;
+
+/* Statistics */
+pred.predictions_made      = 0;
+pred.correct_predictions   = 0;
+pred.prediction_accuracy   = 0.0f;
+pred.interventions_avoided = 0;
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 14: MODEL-BASED PREDICTIVE OBSERVER INITIALIZATION (V7.1)
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ * RATIONALE: Model starts with nominal component values. Calibration will adjust these
+ *            based on observed system response.
+ */
+
+/* Load estimation */
+model_obs.rload_instant     = MODEL_RLOAD_NOMINAL;
+model_obs.rload_estimated   = MODEL_RLOAD_NOMINAL;
+model_obs.rload_confidence  = 0.0f;
+model_obs.rload_valid       = 0;
+model_obs.rload_variance    = 0.0f;
+model_obs.rload_last_update = 0.0f;
+
+/* Physics model */
+model_obs.di_dt_model        = 0.0f;
+model_obs.dvout_dt_model     = 0.0f;
+model_obs.iL_predicted       = 0.0f;
+model_obs.vout_predicted     = VOUT_TARGET;
+model_obs.duty_ideal         = 0.5f;   /* Default 50% duty, dynamically updated */
+model_obs.iL_prediction_old   = 0.0f;
+model_obs.vout_prediction_old = VOUT_TARGET;
+model_obs.prediction_timestamp = 0.0f;
+
+/* Error metrics */
+model_obs.vout_error           = 0.0f;
+model_obs.vout_error_percent   = 0.0f;
+model_obs.iL_error             = 0.0f;
+model_obs.iL_error_percent     = 0.0f;
+model_obs.error_integral       = 0.0f;
+model_obs.validation_window_active = 0;
+model_obs.validations_done     = 0;
+model_obs.validations_passed   = 0;
+model_obs.validation_success_rate = 0.0f;
+
+/* Anomaly detection */
+model_obs.anomaly_type            = ANOMALY_TYPE_NONE;
+model_obs.anomaly_duration        = 0.0f;
+model_obs.anomaly_count           = 0;
+model_obs.anomaly_confirmed       = 0;
+model_obs.anomaly_severity        = 0.0f;
+model_obs.slow_response_detected  = 0;
+model_obs.fast_response_detected  = 0;
+model_obs.overshoot_predicted     = 0;
+model_obs.component_fault_suspected = 0;
+model_obs.sensor_error_suspected  = 0;
+
+/* Model calibration */
+model_obs.L_correction         = 1.0f;
+model_obs.Cout_correction      = 1.0f;
+model_obs.L_effective          = MODEL_L_NOMINAL;
+model_obs.Cout_effective       = MODEL_COUT_NOMINAL;
+model_obs.calibration_active   = 0;
+model_obs.calibration_complete = 0;
+
+/* Adaptive duty */
+model_obs.duty_correction          = 0.0f;
+model_obs.duty_correction_integral = 0.0f;
+model_obs.correction_active        = 0;
+model_obs.correction_direction     = 0;
+
+/* Time constants (pre-calculated: sqrt(10e-6 * 220e-6) ≈ 1.48e-6) */
+model_obs.tau_LC            = 1.48e-6f;    /* sqrt(L * C) */
+model_obs.tau_RC            = MODEL_RLOAD_NOMINAL * MODEL_COUT_NOMINAL;
+model_obs.f_resonance       = 1.0f / (6.2832f * model_obs.tau_LC);
+model_obs.settling_time_est = 5.0f * model_obs.tau_RC;
+
+/* Statistics */
+model_obs.predictions_total   = 0;
+model_obs.predictions_accurate = 0;
+model_obs.model_accuracy      = 0.0f;
+model_obs.anomalies_detected  = 0;
+model_obs.corrections_applied = 0;
+model_obs.faults_prevented    = 0;
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 15: IMPEDANCE OBSERVER INITIALIZATION
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ */
+
+impedance_obs.r_load_instant  = R_LOAD_NOMINAL;
+impedance_obs.r_load_filtered = R_LOAD_NOMINAL;
+impedance_obs.r_load_variance = 0.0f;
+
+/* R history array */
+{
+    int i;
+    for (i = 0; i < 8; i++)
+    {
+        impedance_obs.r_history[i] = R_LOAD_NOMINAL;
+    }
+}
+impedance_obs.history_index = 0;
+
+impedance_obs.load_class       = 4;      /* Moderate */
+impedance_obs.is_valid         = 0;
+impedance_obs.confidence       = 0.0f;
+impedance_obs.confidence_timer = 0.0f;
+
+impedance_obs.r_source_estimated = 0.3f;
+impedance_obs.vin_no_load        = 0.0f;   /* Updated by first measurement */
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 16: THERMAL INTEGRATOR INITIALIZATION
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ */
+
+thermal_int.energy_accumulated   = 0.0f;
+thermal_int.energy_peak          = 0.0f;
+thermal_int.temperature_estimated = 25.0f;  /* Ambient temperature */
+thermal_int.thermal_margin       = 1.0f;
+
+thermal_int.warning_active  = 0;
+thermal_int.critical_active = 0;
+thermal_int.trip_proven     = 0;
+
+thermal_int.time_above_warning  = 0.0f;
+thermal_int.time_above_critical = 0.0f;
+
+thermal_int.cooling_trend  = 0;
+thermal_int.recovery_rate  = 0.0f;
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 17: INPUT OCP INITIALIZATION
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ */
+
+input_ocp.warning_active = 0;
+input_ocp.ocp_suspected  = 0;
+input_ocp.ocp_proven     = 0;
+
+input_ocp.shootthrough_suspected = 0;
+input_ocp.shootthrough_proven    = 0;
+
+input_ocp.ocp_evidence_timer         = 0.0f;
+input_ocp.shootthrough_evidence_timer = 0.0f;
+input_ocp.debounce_counter           = 0;
+
+input_ocp.iin_peak     = 0.0f;
+input_ocp.iin_at_fault = 0.0f;
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 18: PEAK TRACKER INITIALIZATION
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ */
+
+peak_tracker.peak_active  = 0;
+peak_tracker.peak_timer   = 0.0f;
+peak_tracker.peak_fault   = 0;
+peak_tracker.instant_fault = 0;
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 19: DYNAMIC UVLO INITIALIZATION
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ */
+
+dynamic_uvlo.uvlo_threshold_active = 9.5f;
+dynamic_uvlo.uvlo_startup_active   = 10.5f;
+
+dynamic_uvlo.heavy_load_mode = 0;
+dynamic_uvlo.vin_sag_allowed = 2.0f;
+dynamic_uvlo.vin_expected    = 0.0f;   /* Updated by first measurement */
+dynamic_uvlo.vin_sag_measured = 0.0f;
+
+dynamic_uvlo.source_sag_detected = 0;
+dynamic_uvlo.hardware_failure    = 0;
+dynamic_uvlo.trip_proven         = 0;
+dynamic_uvlo.debounce_counter    = 0;
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 20: POWER EFFICIENCY INITIALIZATION
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ */
+
+power_eff.pin_instant  = 0.0f;
+power_eff.pin_filtered = 0.0f;
+power_eff.pout_instant  = 0.0f;
+power_eff.pout_filtered = 0.0f;
+
+power_eff.efficiency_instant  = 0.0f;
+power_eff.efficiency_filtered = 0.0f;
+power_eff.efficiency_percent  = 0.0f;
+
+power_eff.energy_in_total   = 0.0f;
+power_eff.energy_out_total  = 0.0f;
+power_eff.energy_loss_total = 0.0f;
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 21: FAULT MANAGER INITIALIZATION
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ */
+
+fault.fault_active   = 0;
+fault.fault_type     = FAULT_NONE;
+fault.fault_value    = 0.0f;
+fault.recovery_timer = 0.0f;
+fault.fault_count    = 0;
+fault.fault_latched  = 0;
+
+fault.ovp_trip         = 0;
+fault.ocp_trip         = 0;
+fault.uvlo_trip        = 0;
+fault.thermal_trip     = 0;
+fault.short_trip       = 0;
+fault.iin_ocp_trip     = 0;
+fault.shootthrough_trip = 0;
+fault.dcm_trip         = 0;
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 22: DIAGNOSTIC COUNTERS INITIALIZATION
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ */
+
+diag.ovp_events          = 0;
+diag.ocp_events          = 0;
+diag.uvlo_events         = 0;
+diag.thermal_events      = 0;
+diag.short_events        = 0;
+diag.iin_ocp_events      = 0;
+diag.shootthrough_events = 0;
+diag.oscillation_events  = 0;
+diag.dcm_events          = 0;
+diag.current_limit_events = 0;
+diag.scenario_changes     = 0;
+diag.softstart_completions = 0;
+diag.softstart_faults     = 0;
+diag.total_energy_dissipated = 0.0f;
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * END OF V8.2 START FUNCTION - MISRA-C:2012 Compliant
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ */

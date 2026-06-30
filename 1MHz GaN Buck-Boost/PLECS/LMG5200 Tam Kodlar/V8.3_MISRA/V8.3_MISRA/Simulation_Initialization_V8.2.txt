@@ -1,0 +1,479 @@
+%% ═══════════════════════════════════════════════════════════════════════════════════════
+%%  LMG5200 Buck-Boost Converter - V8.2 Military-Grade Simulation Initialization
+%%  MISRA-C:2012 Aligned | DO-178C Principles | L=10µH | 1MHz Switching
+%% ═══════════════════════════════════════════════════════════════════════════════════════
+%%
+%%  @file       Simulation_Initialization_V8.2.txt
+%%  @brief      PLECS/MATLAB initialization script for MIL-SPEC GaN converter
+%%  @version    V8.2 - MISRA-C Compliant Refactor
+%%  @date       January 2025
+%%  @author     Alperen / Claude AI
+%%
+%%  @details    This script initializes all simulation parameters, component values,
+%%              and test profiles for the LMG5200-based Buck-Boost converter.
+%%              All values synchronized with Code Declaration constants.
+%%
+%% ═══════════════════════════════════════════════════════════════════════════════════════
+
+clear all; clc;
+
+%% ═══════════════════════════════════════════════════════════════════════════════════════
+%% SECTION 1: TARGET HARDWARE CONFIGURATION
+%% ═══════════════════════════════════════════════════════════════════════════════════════
+%% RATIONALE: Differentiates between STM32 hardware target and offline simulation.
+%%            Hardware-specific parameters are loaded based on detected target.
+
+target = plecs('get', './STM & Debug/Controller', 'CodeGenTarget');
+
+if strcmp(target, 'STM32G4x') || strcmp(target, 'STM32G4')
+    % Hardware deployment mode
+    chip_type  = 'STM32G474RE';
+    board_type = 'Nucleo-64';
+    disp('✓ Target: STM32G474RE (Nucleo-64)');
+    
+elseif isempty(target) || strcmp(target, 'Generic')
+    % Offline simulation mode
+    chip_type  = 'Generic';
+    board_type = 'Simulation';
+    disp('→ Mode: Offline Simulation');
+    
+else
+    error(['❌ Unsupported target: ', target]);
+end
+
+
+%% ═══════════════════════════════════════════════════════════════════════════════════════
+%% SECTION 2: TIMING AND SWITCHING PARAMETERS
+%% ═══════════════════════════════════════════════════════════════════════════════════════
+%% RATIONALE: 1MHz switching frequency maximizes GaN efficiency while maintaining
+%%            digital control stability. Simulation step 100x finer for accuracy.
+
+fsw           = 1e6;                    % 1 MHz switching frequency [Hz]
+Ts_controller = 1 / fsw;                % 1µs controller period [s]
+Ts_sim        = Ts_controller / 40;     % 25ns simulation step [s] (V8.9: Memory optimization 100->40)
+
+
+%% ═══════════════════════════════════════════════════════════════════════════════════════
+%% SECTION 3: SYSTEM OPERATING SPECIFICATIONS
+%% ═══════════════════════════════════════════════════════════════════════════════════════
+%% RATIONALE: Military-grade 10-36V input range covers automotive, avionics, and
+%%            portable military applications. 12V output standard for electronics.
+
+% Input voltage range (MIL-STD-1275E compatible)
+VIN_MIN     = 10.0;                     % Minimum input voltage [V]
+VIN_MAX     = 36.0;                     % Maximum input voltage [V]
+VIN_NOMINAL = 24.0;                     % Nominal input (for analysis) [V]
+
+% Output specifications
+VOUT_TARGET = 12.0;                     % Target output voltage [V]
+IOUT_MAX    = 6.0;                      % Maximum output current [A]
+POUT_MAX    = 72.0;                     % Maximum output power [W]
+
+% Input current limits
+IIN_MAX     = 9.5;                      % Maximum input current [A]
+IIN_OCP     = 12.0;                     % Input OCP threshold [A]
+
+% Load resistance range
+RLOAD_MIN   = 2.0;                      % Minimum load (full power) [Ω]
+RLOAD_MAX   = 1000.0;                   % Maximum load (near no-load) [Ω]
+
+
+%% ═══════════════════════════════════════════════════════════════════════════════════════
+%% SECTION 4: PROTECTION THRESHOLDS
+%% ═══════════════════════════════════════════════════════════════════════════════════════
+%% RATIONALE: Multi-level protection prevents component damage while allowing
+%%            short-term peak power capability (LMG5200 rated 40A peak/250µs).
+
+% Inductor current limits (TITAN Section 2.2)
+IIND_SOFT_LIMIT   = 10.0;               % TITAN: IL soft limit (225µs) [A]
+IIND_HARD_LIMIT   = 35.0;               % TITAN: IL hard limit (<50ns) [A]
+IIND_REDUCE_LIMIT = 30.0;               % Warning threshold [A]
+
+% Peak and catastrophic limits (TITAN military spec)
+IIND_PEAK_LIMIT   = 35.0;               % TITAN: IL hard limit [A]
+IIND_PEAK_TIME    = 225e-6;             % TITAN: 225µs tolerance [s]
+IIND_PEAK_WARNING = 30.0;               % Warning threshold [A]
+IIND_CATASTROPHIC = 35.0;               % TITAN: = IL hard [A]
+
+% Voltage protection
+OVP_TRIP     = 14.5;                    % Output OVP trip [V]
+OVP_ABSOLUTE = 15.5;                    % Absolute OVP (hardware) [V]
+UVLO_MIN     = 9.0;                     % Under-voltage lockout [V]
+
+% Duty cycle limits (V7.2 optimized for 12V target)
+DUTY_MAX = 0.995;                       % Maximum duty (increased)
+DUTY_MIN = 0.005;                       % Minimum duty (decreased)
+
+% Integrator limits (V7.1 - sufficient for 8V→12V tracking)
+INTEGRATOR_MAX =  0.35;                 % Positive integrator limit
+INTEGRATOR_MIN = -0.30;                 % Negative integrator limit
+
+% ─────────────────────────────────────────────────────────────────────────────────────────
+% Freewheel/Brake Circuit (V8.2)
+% RATIONALE: 5Ω brake resistor dissipates inductor energy during overvoltage/load dump
+% ─────────────────────────────────────────────────────────────────────────────────────────
+FREEWHEEL_BRAKE_RESISTANCE = 5.0;       % Brake resistor [Ω]
+FREEWHEEL_BRAKE_POWER_MAX  = 30.0;      % Maximum dissipation [W]
+FREEWHEEL_BRAKE_CURRENT_MAX = sqrt(FREEWHEEL_BRAKE_POWER_MAX / FREEWHEEL_BRAKE_RESISTANCE);  % ~2.45A
+FREEWHEEL_BRAKE_VOLTAGE_MAX = 13.5;     % Maximum voltage across brake [V]
+
+
+%% ═══════════════════════════════════════════════════════════════════════════════════════
+%% SECTION 5: CIRCUIT COMPONENTS
+%% ═══════════════════════════════════════════════════════════════════════════════════════
+%% RATIONALE: Component values based on Coilcraft and TDK references.
+%%            ESR values include frequency dependence at 1MHz.
+
+% ─────────────────────────────────────────────────────────────────────────────────────────
+% Inductor - 10µH (Coilcraft XAL1010 or equivalent)
+% ─────────────────────────────────────────────────────────────────────────────────────────
+L_inductance   = 10e-6;                 % Inductance [H]
+L_dcr          = 0.010;                 % DC resistance [Ω]
+L_saturation   = 12.0;                  % Saturation current [A]
+L_parasitic_C  = 5e-12;                 % Parasitic capacitance [F]
+
+% ─────────────────────────────────────────────────────────────────────────────────────────
+% Input Capacitors (parallel ceramic + bulk)
+% ─────────────────────────────────────────────────────────────────────────────────────────
+Cin_ceramic     = 10e-9;                % Ceramic bypass [F]
+Cin_bulk        = 47e-6;                % Polymer bulk [F]
+Cin_esr_ceramic = 0.030;                % Ceramic ESR @ 1MHz [Ω]
+Cin_esr_bulk    = 0.050;                % Polymer ESR [Ω]
+
+% ─────────────────────────────────────────────────────────────────────────────────────────
+% Output Capacitors (parallel ceramic + bulk)
+% ─────────────────────────────────────────────────────────────────────────────────────────
+Cout_ceramic     = 10e-9;               % Ceramic bypass [F]
+Cout_bulk        = 220e-6;              % Polymer bulk [F]
+Cout_esr_ceramic = 0.030;               % Ceramic ESR @ 1MHz [Ω]
+Cout_esr_bulk    = 0.015;               % Polymer ESR [Ω]
+
+% Calculated totals
+Cout_total     = Cout_ceramic + Cout_bulk;
+Cout_esr_total = (Cout_esr_ceramic * Cout_esr_bulk) / (Cout_esr_ceramic + Cout_esr_bulk);
+
+% Ground plane parasitic
+L_gnd_plane = 1e-9;                     % PCB parasitic inductance [H]
+
+
+%% ═══════════════════════════════════════════════════════════════════════════════════════
+%% SECTION 6: SENSING CIRCUITS
+%% ═══════════════════════════════════════════════════════════════════════════════════════
+%% RATIONALE: 12-bit ADC with proper scaling enables ±33A current sensing
+%%            and 0-40V voltage sensing with adequate resolution.
+
+ADC_resolution = 12;                    % 12-bit ADC
+ADC_Vref       = 3.3;                   % Reference voltage [V]
+
+% Voltage Sensing (resistor dividers)
+% Vin: 10k/130k divider (R2/(R1+R2) = 10k/140k = 0.0714)
+Vin_R1            = 130000;              % Upper resistor [Ω]
+Vin_R2            = 10000;               % Lower resistor [Ω]
+Vin_divider_ratio = Vin_R2 / (Vin_R1 + Vin_R2);
+Vin_scale         = 1 / Vin_divider_ratio;   % = 14.0
+
+% Vout: 10k/51k divider (R2/(R1+R2) = 10k/61k = 0.1639)
+Vout_R1            = 51000;              % Upper resistor [Ω]
+Vout_R2            = 10000;              % Lower resistor [Ω]
+Vout_divider_ratio = Vout_R2 / (Vout_R1 + Vout_R2);
+Vout_scale         = 1 / Vout_divider_ratio; % = 6.1
+
+% Separate scale variables for Real Value subsystem visualization
+
+VinReal_scale  = Vin_scale;              % 14.0x for Vin (10k/130k divider)
+VoutReal_scale = Vout_scale;             % 6.1x for Vout (10k/51k divider)
+
+% Current Sensing (INA240A2 + 1mΩ shunt)
+% RATIONALE: INA240A2 provides 50x gain, enabling ±33A bidirectional sensing
+Rs_shunt                = 1e-3;         % Shunt resistance [Ω]
+INA240_gain             = 50;           % INA240A2 gain [V/V]
+Im_sensitivity          = Rs_shunt * INA240_gain;   % 0.05 V/A
+Im_offset               = ADC_Vref / 3.0;           % V8.11: Asymmetric offset (1.1V) - Neg: 0-1.1V, Pos: 1.1-3.3V
+Im_max_unidirectional   = ADC_Vref / Im_sensitivity;  % 66A unidirectional
+Im_max_negative         = Im_offset / Im_sensitivity;           % -22A (1.1V / 0.05)
+Im_max_positive         = (ADC_Vref - Im_offset) / Im_sensitivity; % +44A (2.2V / 0.05)
+Im_max_bidirectional    = Im_max_negative;            % V8.11: En düşük değeri kullan
+Im_scale                = 1 / Im_sensitivity;
+
+
+%% ═══════════════════════════════════════════════════════════════════════════════════════
+%% SECTION 7: LMG5200 GaN MODULE PARAMETERS
+%% ═══════════════════════════════════════════════════════════════════════════════════════
+%% RATIONALE: LMG5200 is a GaN half-bridge with integrated driver.
+%%            V7.9: Schottky diode model used for freewheeling during dead-time.
+%%            Coss removed for simulation stability (per V7.9 update).
+
+% RDS(on) values (separate high/low side)
+LMG_Rds_on_hi = 50e-3;                  % High-side RDS(on) [Ω]
+LMG_Rds_on_lo = 18e-3;                  % Low-side RDS(on) [Ω]
+LMG_Rds_on    = LMG_Rds_on_lo;          % Compatibility alias
+
+% Schottky diode (anti-parallel, for dead-time freewheeling)
+Schottky_Vf   = 0.3;                    % Forward voltage [V]
+Schottky_Ron  = 15e-3;                  % On-resistance [Ω]
+LMG_Qg        = 3.8e-9;                 % Gate charge [C]
+
+% NOTE: Coss REMOVED per V7.9 (caused simulation spikes)
+% LMG_Coss = 180e-12;                   % NOT USED
+
+% Thermal parameters
+LMG_Rth_jc    = 2.0;                    % Junction-case thermal resistance [°C/W]
+LMG_Tj_max    = 150;                    % Maximum junction temperature [°C]
+LMG_Tj_ambient = 25;                    % Ambient temperature [°C]
+
+% Timing - 8ns dead-time
+Tdt       = 8e-9;                       % Dead-time [s]
+LMG_ton   = 5e-9;                       % Turn-on time [s]
+LMG_toff  = 3e-9;                       % Turn-off time [s]
+
+
+%% ═══════════════════════════════════════════════════════════════════════════════════════
+%% SECTION 8: MCU CONFIGURATION
+%% ═══════════════════════════════════════════════════════════════════════════════════════
+
+SYSCLK          = 170;                  % STM32G474 system clock [MHz]
+HRTIM_clk       = SYSCLK * 32;          % HRTIM clock [MHz]
+HRTIM_resolution = 1e9 / (HRTIM_clk * 1e6);  % ~184ps resolution
+
+
+%% ═══════════════════════════════════════════════════════════════════════════════════════
+%% SECTION 9: SOFT-START TIMING (V7.10 ULTRA FAST)
+%% ═══════════════════════════════════════════════════════════════════════════════════════
+%% RATIONALE: Fast soft-start (5ms total) minimizes capacitor stress while ensuring
+%%            stable regulation before load connection.
+
+SS_MEASURE_TIME     = 0.1e-3;           % Measurement phase [s]
+SS_CHARACTERIZE_TIME = 0.1e-3;          % Characterization phase [s]
+SS_PRECHARGE_TIME   = 0.2e-3;           % Precharge phase [s]
+SS_RAMP_SLOW_TIME   = 0.3e-3;           % Slow ramp phase [s]
+SS_RAMP_FAST_TIME   = 0.5e-3;           % Fast ramp phase [s]
+SS_RAMP_SETTLE_TIME = 0.3e-3;           % Settle ramp phase [s]
+SS_BLEND_TIME       = 0.5e-3;           % PID blend phase [s]
+SS_STABILIZE_TIME   = 0.3e-3;           % Stabilization phase [s]
+SS_MAX_TIME         = 5e-3;             % Maximum total time [s]
+
+
+%% ═══════════════════════════════════════════════════════════════════════════════════════
+%% SECTION 10: SIMULATION PARAMETERS
+%% ═══════════════════════════════════════════════════════════════════════════════════════
+
+SIM_Rload    = 2;                       % Test load [Ω] (6A @ 12V)
+SIM_R_source = 0.03;                    % Source impedance [Ω]
+
+%% ═══════════════════════════════════════════════════════════════════════════════════════
+%% V8.19: MOD GEÇİŞ TEST SENARYOLARI (100ms/step)
+%% ═══════════════════════════════════════════════════════════════════════════════════════
+%% ═══════════════════════════════════════════════════════════════════════════════════════
+%% V8.19: MOD GEÇİŞ TEST SENARYOLARI (100ms/adım)
+%% ═══════════════════════════════════════════════════════════════════════════════════════
+%% Test Senaryoları ve Dosya İsimlendirme
+%% Değiştirilen Senaryo_Adi değişkeni (Scenario_Name) To File blokları için önek oluşturur.
+%%
+
+% ─────────────────────────────────────────────────────────────────────────────────────────
+% SENARYO 1: Buck → Boost → Buck-Boost (Ani Düşüş + Toparlanma)
+% 36V (Buck) → 10V (Boost) → 12V (Buck-Boost)
+% ─────────────────────────────────────────────────────────────────────────────────────────
+Senaryo_Adi = 'S1_Ani_Dusus_Toparlanma';
+SIM_duration = 0.300;
+Vin_profile_time  = [0.0, 0.099999, 0.100, 0.199999, 0.200, 0.300];
+Vin_profile_value = [36,  36,       10,    10,       12,    12];
+
+% ─────────────────────────────────────────────────────────────────────────────────────────
+% SENARYO 2: Buck → Buck-Boost → Boost (Kademeli Düşüş)
+% 36V (Buck) → 12V (Buck-Boost) → 10V (Boost)
+% ─────────────────────────────────────────────────────────────────────────────────────────
+% Senaryo_Adi = 'S2_Kademeli_Dusus';
+% SIM_duration = 0.300;
+% Vin_profile_time  = [0.0, 0.099999, 0.100, 0.199999, 0.200, 0.300];
+% Vin_profile_value = [36,  36,       12,    12,       10,    10];
+
+% ─────────────────────────────────────────────────────────────────────────────────────────
+% SENARYO 3: Boost → Buck → Buck-Boost (Ani Yükseliş + Düşüş)
+% 10V (Boost) → 36V (Buck) → 12V (Buck-Boost)
+% ─────────────────────────────────────────────────────────────────────────────────────────
+% Senaryo_Adi = 'S3_Ani_Yukselis_Dusus';
+% SIM_duration = 0.300;
+% Vin_profile_time  = [0.0, 0.099999, 0.100, 0.199999, 0.200, 0.300];
+% Vin_profile_value = [10,  10,       36,    36,       12,    12];
+
+% ─────────────────────────────────────────────────────────────────────────────────────────
+% SENARYO 4: Boost → Buck-Boost → Buck (Kademeli Yükseliş)
+% 10V (Boost) → 12V (Buck-Boost) → 36V (Buck)
+% ─────────────────────────────────────────────────────────────────────────────────────────
+% Senaryo_Adi = 'S4_Kademeli_Yukselis';
+% SIM_duration = 0.300;
+% Vin_profile_time  = [0.0, 0.099999, 0.100, 0.199999, 0.200, 0.300];
+% Vin_profile_value = [10,  10,       12,    12,       36,    36];
+
+% ─────────────────────────────────────────────────────────────────────────────────────────
+% SENARYO 5: Buck-Boost → Buck → Boost (Ortadan Başla + Uç Noktalar)
+% 12V (Buck-Boost) → 36V (Buck) → 10V (Boost)
+% ─────────────────────────────────────────────────────────────────────────────────────────
+% Senaryo_Adi = 'S5_Orta_Uclar';
+% SIM_duration = 0.300;
+% Vin_profile_time  = [0.0, 0.099999, 0.100, 0.199999, 0.200, 0.300];
+% Vin_profile_value = [12,  12,       36,    36,       10,    10];
+
+% ─────────────────────────────────────────────────────────────────────────────────────────
+% SENARYO 6: Buck-Boost → Boost → Buck (Ortadan Başla + Ters Uçlar)
+% 12V (Buck-Boost) → 10V (Boost) → 36V (Buck)
+% ─────────────────────────────────────────────────────────────────────────────────────────
+% Senaryo_Adi = 'S6_Orta_Ters_Uclar';
+% SIM_duration = 0.300;
+% Vin_profile_time  = [0.0, 0.099999, 0.100, 0.199999, 0.200, 0.300];
+% Vin_profile_value = [12,  12,       10,    10,       36,    36];
+
+% ─────────────────────────────────────────────────────────────────────────────────────────
+% SENARYO 7: TAM DÖNGÜ - Tüm Modlar (4 adım)
+% 36V → 10V → 12V → 24V (Buck → Boost → Buck-Boost → Buck)
+% ─────────────────────────────────────────────────────────────────────────────────────────
+% Senaryo_Adi = 'S7_Tam_Dongu';
+% SIM_duration = 0.400;
+% Vin_profile_time  = [0.0, 0.099999, 0.100, 0.199999, 0.200, 0.299999, 0.300, 0.400];
+% Vin_profile_value = [36,  36,       10,    10,       12,    12,       24,    24];
+
+% ─────────────────────────────────────────────────────────────────────────────────────────
+% SENARYO 8: STRES TESTİ - Hızlı Vin Salınımı (5 adım)
+% 36V → 10V → 36V → 10V → 12V
+% ─────────────────────────────────────────────────────────────────────────────────────────
+% Senaryo_Adi = 'S8_Stres_Testi';
+% SIM_duration = 0.500;
+% Vin_profile_time  = [0.0, 0.099999, 0.100, 0.199999, 0.200, 0.299999, 0.300, 0.399999, 0.400, 0.500];
+% Vin_profile_value = [36,  36,       10,    10,       36,    36,       10,    10,       12,    12];
+
+
+%% ═══════════════════════════════════════════════════════════════════════════════════════
+%% ═══════════════════════════════════════════════════════════════════════════════════════
+%% TO FILE BLOKLARI İÇİN DİNAMİK DOSYA YÖNETİMİ (KLASÖRLÜ YAPI - TAM YOL)
+%% ═══════════════════════════════════════════════════════════════════════════════════════
+% V8.19: Çıktıları senaryo adına sahip bir alt klasöre kaydeder.
+% Örn: C:\...\S1_Ani_Dusus_Toparlanma\S1_Ani_Dusus_Toparlanma_V8.2_Gercek.mat
+
+% 1. Mevcut Çalışma Dizinini Al (Tam Yol)
+Calisma_Dizini = pwd;
+
+% 2. Hedef Klasör Yolunu Oluştur
+% Senaryo_Adi yukarıda tanımlandı (Örn: 'S1_Ani_Dusus_Toparlanma')
+Klasor_Yolu = strcat(Calisma_Dizini, '/', Senaryo_Adi);
+
+% 3. Klasör Yoksa Oluştur
+if exist(Klasor_Yolu, 'dir') ~= 7
+    mkdir(Klasor_Yolu);
+    printf('Klasör oluşturuldu: %s\n', Klasor_Yolu);
+end
+
+% 4. Dosya Yollarını Oluştur (Tam Yol + Dosya Adı)
+% Bu değişkenler PLECS To File bloğunda kullanılacak
+% V8.19 Update: .mat uzantıları kaldırıldı (PLECS otomatik ekliyor)
+Dosya_Adi_Gercek       = strcat(Klasor_Yolu, '/', Senaryo_Adi, '_V8.2_Gercek');
+Dosya_Adi_PWM          = strcat(Klasor_Yolu, '/', Senaryo_Adi, '_V8.2_PWM');
+Dosya_Adi_Kontrol      = strcat(Klasor_Yolu, '/', Senaryo_Adi, '_V8.2_Kontrol');
+Dosya_Adi_Sistem       = strcat(Klasor_Yolu, '/', Senaryo_Adi, '_V8.2_Sistem');
+Dosya_Adi_HataAyiklama = strcat(Klasor_Yolu, '/', Senaryo_Adi, '_V8.2_HataAyiklama');
+Dosya_Adi_Durum        = strcat(Klasor_Yolu, '/', Senaryo_Adi, '_V8.2_Durum');
+Dosya_Adi_Duty         = strcat(Klasor_Yolu, '/', Senaryo_Adi, '_V8.2_Duty');
+
+% 5. Konsola Bilgi Yaz (Debug)
+printf('Senaryo Aktif: %s\n', Senaryo_Adi);
+printf('Kaydedilecek Dosya (Uzantısız): %s\n', Dosya_Adi_Gercek);
+
+% PLECS KULLANIMI:
+% 1. To File bloğuna girin.
+% 2. "Filename" seçeneğini "literal" değil "evaluate" yapın.
+% 3. Kutuya değişen adını yazın (Örn: Dosya_Adi_Gercek)
+
+
+%% ═══════════════════════════════════════════════════════════════════════════════════════
+%% SECTION 11: LEGACY VARIABLE ALIASES
+%% ═══════════════════════════════════════════════════════════════════════════════════════
+%% RATIONALE: Maintains compatibility with older PLECS model references.
+
+% Load and source
+Rload    = SIM_Rload;
+R_source = SIM_R_source;
+
+% Reference
+REF_VOLTAGE = VOUT_TARGET;
+duty_max    = DUTY_MAX;
+duty_min    = DUTY_MIN;
+integrator_max = INTEGRATOR_MAX;
+integrator_min = INTEGRATOR_MIN;
+
+% Voltage ranges
+Vdc_nom = VIN_NOMINAL;
+Vin_min = VIN_MIN;
+Vin_max = VIN_MAX;
+
+% Inductor (legacy names)
+L    = L_inductance;
+Lind = L_inductance;
+Rind = L_dcr;
+Cind = L_parasitic_C;
+INDUCTOR_SAT_LIMIT = L_saturation;
+
+% Capacitors (legacy names)
+Cin_H      = Cin_ceramic;
+Cin_L      = Cin_bulk;
+Rin_esr_H  = Cin_esr_ceramic;
+Rin_esr_L  = Cin_esr_bulk;
+Cout_H     = Cout_ceramic;
+Cout_L     = Cout_bulk;
+Rout_esr_H = Cout_esr_ceramic;
+Rout_esr_L = Cout_esr_bulk;
+
+% Current sensing (legacy)
+Im_O = Im_offset;
+Im_K = Im_sensitivity;
+
+% Other legacy
+Rs         = Rs_shunt;
+Lgnd_plane = L_gnd_plane;
+LMG_Ron    = LMG_Rds_on;
+Vbias      = 12;
+duty_init  = 0.5;
+
+
+%% ═══════════════════════════════════════════════════════════════════════════════════════
+%% SECTION 12: C-SCRIPT CONFIGURATION
+%% ═══════════════════════════════════════════════════════════════════════════════════════
+
+CSCRIPT_NUM_INPUTS  = 5;                % Vin, Vout, Iin, I_L, Iout
+CSCRIPT_NUM_OUTPUTS = 5;                % Buck PWM, Boost PWM, Shutdown, Discharge, Freewheel
+
+
+%% ═══════════════════════════════════════════════════════════════════════════════════════
+%% SECTION 13: V7.0 BEHAVIORAL ANALYSIS PARAMETERS
+%% ═══════════════════════════════════════════════════════════════════════════════════════
+%% RATIONALE: Oscillation detection tuned for 12V target with ±0.5V acceptable ripple.
+
+HISTORY_DEPTH      = 64;                 % History buffer [samples]
+PREDICTION_HORIZON = 8;                  % MPC horizon [steps]
+
+% Oscillation detection (for 11V-14V oscillations around 12V)
+OSC_DETECTION_WINDOW    = 10e-3;         % Analysis window [s]
+OSC_SIGN_CHANGE_LIMIT   = 4;             % Sign changes for detection
+OSC_AMPLITUDE_THRESHOLD = 0.5;           % Amplitude threshold [V]
+OSC_DAMPING_FACTOR      = 0.35;          % PID damping factor
+
+% Predictive controller model
+PRED_MODEL_L = L_inductance;
+PRED_MODEL_C = Cout_total;
+PRED_MODEL_R = SIM_Rload;
+
+% Scenario engine
+HIGH_VIN_THRESHOLD = 20.0;               % High Vin threshold [V]
+HIGH_VIN_KP_FACTOR = 0.5;                % Kp reduction at high Vin
+HIGH_VIN_KI_FACTOR = 0.4;                % Ki reduction at high Vin
+
+
+%% ═══════════════════════════════════════════════════════════════════════════════════════
+%% END OF V8.2 SIMULATION INITIALIZATION - MISRA-C:2012 Aligned
+%% ═══════════════════════════════════════════════════════════════════════════════════════
+disp('═══════════════════════════════════════════════════════════════');
+disp('  V8.2 Simulation Initialization Complete');
+disp(['  Vin Range: ', num2str(VIN_MIN), 'V - ', num2str(VIN_MAX), 'V']);
+disp(['  Vout Target: ', num2str(VOUT_TARGET), 'V']);
+disp(['  Switching: ', num2str(fsw/1e6), ' MHz']);
+disp(['  Simulation: ', num2str(SIM_duration*1000), ' ms']);
+disp('═══════════════════════════════════════════════════════════════');

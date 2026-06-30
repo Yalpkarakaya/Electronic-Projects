@@ -1,0 +1,3505 @@
+Plecs {
+  Name          "from file"
+  Version       "5.0"
+  CircuitModel  "ContStateSpace"
+  StartTime     "0.0"
+  TimeSpan      "SIM_duration"
+  Timeout       ""
+  Solver        "radau"
+  MaxStep       "Ts_sim"
+  InitStep      "1e-3"
+  FixedStep     "1e-3"
+  Refine        "1"
+  ZCStepSize    "1e-9"
+  RelTol        "1e-3"
+  AbsTol        "1e-3"
+  TurnOnThreshold "0"
+  NonIdealSwitchResistance "1"
+  SyncFixedStepTasks "2"
+  UseSingleCommonBaseRate "2"
+  LossVariableLimitExceededMsg "3"
+  NegativeSwitchLossMsg "3"
+  DivisionByZeroMsg "2"
+  DatatypeOverflowMsg "2"
+  DatatypeInheritanceConflictMsg "1"
+  ContSampleTimeConflictMsg "1"
+  StiffnessDetectionMsg "2"
+  MaxConsecutiveZCs "1000"
+  AlgebraicLoopWithStateMachineMsg "2"
+  AssertionAction "1"
+  FixedPointDatatypeOverride "1"
+  InitializationCommands base64 "JSUgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09P"
+"T09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KJSUgRlJPTSBGSUxFIFNFTkFSWU8gU0"
+"VDSU1JIC0gVjguMgolJSA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0"
+"9PT09PT09PT09PT09PT09PT09PT09PQolJSBWOC4xOTogTU9EIEdFw4fEsMWeIFRFU1QgU0VOQVJZ"
+"T0xBUkkgCiUlIOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVk"
+"OKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkO"
+"KVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOK"
+"VkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkOKVkAolJSBLVUxMQU5JTTogVGVzdCBldG1layBp"
+"c3RlZGnEn2luaXogc2VuYXJ5byBudW1hcmFzxLFuxLEgYcWfYcSfxLF5YSB5YXrEsW4uCiUlIDE6I"
+"EJ1Y2sgLT4gQm9vc3QgLT4gQnVjay1Cb29zdCAoQW5pIETDvMWfw7zFnyArIFRvcGFybGFubWEpCi"
+"UlIDI6IEJ1Y2sgLT4gQnVjay1Cb29zdCAtPiBCb29zdCAoS2FkZW1lbGkgRMO8xZ/DvMWfKQolJSA"
+"zOiBCb29zdCAtPiBCdWNrIC0+IEJ1Y2stQm9vc3QgKEFuaSBZw7xrc2VsacWfICsgRMO8xZ/DvMWf"
+"KQolJSA0OiBCb29zdCAtPiBCdWNrLUJvb3N0IC0+IEJ1Y2sgKEthZGVtZWxpIFnDvGtzZWxpxZ8pC"
+"iUlIDU6IEJ1Y2stQm9vc3QgLT4gQnVjayAtPiBCb29zdCAoT3J0YWRhbiBCYcWfbGEgKyBVw6cgTm"
+"9rdGFsYXIpCiUlIDY6IEJ1Y2stQm9vc3QgLT4gQm9vc3QgLT4gQnVjayAoT3J0YWRhbiBCYcWfbGE"
+"gKyBUZXJzIFXDp2xhcikKJSUgNzogVEFNIETDlk5Hw5wgLSBUw7xtIE1vZGxhciAoNCBhZMSxbSkK"
+"JSUgODogU1RSRVMgVEVTVMSwIC0gSMSxemzEsSBWaW4gU2FsxLFuxLFtxLEgKDUgYWTEsW0pCiUlI"
+"Dk6IEtBT1TEsEsgU1RSRVMgVEVTVMSwICgxIFNhbml5ZSAtIDEwLTM2ViBBcmEgRGXEn2VybGVyKQ"
+"olJSAxMDogTUFLU8SwTVVNIFZJTiBLRcWeRsSwICg3Nm1zIC0gMzZW4oaSNDVWIGJhc2FtYWtsxLE"
+"gecO8a3NlbGnFnykKJSUgMTE6IEdFTsSwxZ5MRVTEsExNxLDFniBBUkFMSUsgRMOWTkfDnFPDnCAo"
+"OVYtNDBWLCAyIFRla3JhcikKJSUgMTI6IEZBVUxUICYgV0FUQ0hET0cgVEVTVMSwIChWaW4gQXJhb"
+"MSxayBExLHFn8SxICsgNTBtcyBUaW1lb3V0KQolJSDilZDilZDilZDilZDilZDilZDilZDilZDilZ"
+"DilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZD"
+"ilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDi"
+"lZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZDilZAKU0VDS"
+"UxFTl9TRU5BUllPID0gMTI7ICAlIDEtMTIgYXJhc2kgc2VuYXJ5byBudW1hcmFzaQoKJSUgU2VuYX"
+"J5byBJc2ltbGVyaQpTZW5hcnlvbGFyID0gewogICAgJ1MxX0FuaV9EdXN1c19Ub3Bhcmxhbm1hJyw"
+"KICAgICdTMl9LYWRlbWVsaV9EdXN1cycsCiAgICAnUzNfQW5pX1l1a3NlbGlzX0R1c3VzJywKICAg"
+"ICdTNF9LYWRlbWVsaV9ZdWtzZWxpcycsCiAgICAnUzVfT3J0YV9VY2xhcicsCiAgICAnUzZfT3J0Y"
+"V9UZXJzX1VjbGFyJywKICAgICdTN19UYW1fRG9uZ3UnLAogICAgJ1M4X1N0cmVzX1Rlc3RpJywKIC"
+"AgICdTOV9LYW90aWtfU3RyZXNfVGVzdGknLAogICAgJ1MxMF9NYXhfVmluX0tlc2ZpJywKICAgICd"
+"TMTFfR2VuaXNsZXRpbG1pc19Eb25ndScsCiAgICAnUzEyX0ZhdWx0X1dhdGNoZG9nX1Rlc3RpJwp9"
+"OwoKU2VuYXJ5b19BZGkgPSBTZW5hcnlvbGFye1NFQ0lMRU5fU0VOQVJZT307CktsYXNvcl9Zb2x1I"
+"D0gc3RyY2F0KHB3ZCwgJy8nLCBTZW5hcnlvX0FkaSk7CgolJSBTZW5hcnlvIFN1cmVsZXJpIChzYW"
+"5peWUpClN1cmVsZXIgPSBbMC4zMDAsIDAuMzAwLCAwLjMwMCwgMC4zMDAsIDAuMzAwLCAwLjMwMCw"
+"gMC40MDAsIDAuNTAwLCAwLjg1LCAwLjA3NiwgMC44NSwgMC44NV07ClNJTV9kdXJhdGlvbiA9IFN1"
+"cmVsZXIoU0VDSUxFTl9TRU5BUllPKTsKCiUlIFNpbXVsYXN5b24gUGFyYW1ldHJlbGVyaQpmc3cgI"
+"CAgICAgICAgID0gMWU2OwpUc19jb250cm9sbGVyID0gMSAvIGZzdzsKVHNfc2ltICAgICAgICA9IF"
+"RzX2NvbnRyb2xsZXIgLyA0MDsKCiUlIEZyb21GaWxlIEJsb2tsYXJpIEljaW4gRG9zeWEgWW9sbGF"
+"yaQpGRl9HZXJjZWsgICAgICAgPSBzdHJjYXQoS2xhc29yX1lvbHUsICcvJywgU2VuYXJ5b19BZGks"
+"ICdfVjguMl9HZXJjZWsnKTsKRkZfUFdNICAgICAgICAgID0gc3RyY2F0KEtsYXNvcl9Zb2x1LCAnL"
+"ycsIFNlbmFyeW9fQWRpLCAnX1Y4LjJfUFdNJyk7CkZGX0tvbnRyb2wgICAgICA9IHN0cmNhdChLbG"
+"Fzb3JfWW9sdSwgJy8nLCBTZW5hcnlvX0FkaSwgJ19WOC4yX0tvbnRyb2wnKTsKRkZfU2lzdGVtICA"
+"gICAgID0gc3RyY2F0KEtsYXNvcl9Zb2x1LCAnLycsIFNlbmFyeW9fQWRpLCAnX1Y4LjJfU2lzdGVt"
+"Jyk7CkZGX0hhdGFBeWlrbGFtYSA9IHN0cmNhdChLbGFzb3JfWW9sdSwgJy8nLCBTZW5hcnlvX0Fka"
+"SwgJ19WOC4yX0hhdGFBeWlrbGFtYScpOwpGRl9EdXJ1bSAgICAgICAgPSBzdHJjYXQoS2xhc29yX1"
+"lvbHUsICcvJywgU2VuYXJ5b19BZGksICdfVjguMl9EdXJ1bScpOwoKcHJpbnRmKCc9PT09PT09PT0"
+"9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PVxuJyk7CnByaW50"
+"ZignICBGcm9tIEZpbGU6IFNlbmFyeW8gJWQgLSAlc1xuJywgU0VDSUxFTl9TRU5BUllPLCBTZW5hc"
+"nlvX0FkaSk7CnByaW50ZignICBTdXJlOiAlLjNmIHNcbicsIFNJTV9kdXJhdGlvbik7CnByaW50Zi"
+"gnICBLbGFzb3I6ICVzXG4nLCBLbGFzb3JfWW9sdSk7CnByaW50ZignPT09PT09PT09PT09PT09PT0"
+"9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT1cbicpOwo="
+  InitialState  "1"
+  SystemState   ""
+  JacobianComputation "2"
+  TaskingMode   "1"
+  TaskConfigurations ""
+  CodeGenParameterInlining "2"
+  CodeGenFloatingPointFormat "2"
+  CodeGenAbsTimeUsageMsg "3"
+  CodeGenBaseName ""
+  CodeGenOutputDir ""
+  CodeGenExtraOpts ""
+  CodeGenTarget "Generic"
+  CodeGenTargetSettings ""
+  ExtendedMatrixPrecision "1"
+  MatrixSignificanceCheck "2"
+  RemoveUnusedStateSpaceOutputs "1"
+  EnableStateSpaceSplitting "2"
+  DisplayStateSpaceSplitting "1"
+  DiscretizationMethod "2"
+  ExternalModeSettings ""
+  AlgebraicLoopMethod "1"
+  AlgebraicLoopTolerance "1e-6"
+  ScriptsDialogGeometry ""
+  ScriptsDialogSplitterPos "0"
+  MixedSignalSolverBypassOperatingPoint "1"
+  MixedSignalSolverInitialConditions "2"
+  MixedSignalSolverMaxNewtonIterations "25"
+  MixedSignalSolverNumThreads "-1"
+  OperatingPointMaxNewtonIterations "50"
+  OperatingPointRelativeNewtonTolerance "1e-3"
+  OperatingPointAbsoluteNewtonTolerance "1e-12"
+  OperatingPointNodalVoltageNewtonTolerance "1e-6"
+  SpiceTemperature "27"
+  SpiceGMin     "0"
+  SpiceInductorRPar "0"
+  SpiceInductorRSer "0"
+  SpiceCapacitorGPar "0"
+  SpiceCapacitorRSer "0"
+  NetlistParserDetails "2"
+  InvalidNetlistFunctionEvaluationMsg "1"
+  IncompatibleInitialConditionMsg "2"
+  Schematic {
+    Location      [-972, 519; -435, 826]
+    ZoomFactor    4.34818
+    SliderPosition [0, 0]
+    ShowBrowser   off
+    BrowserWidth  100
+    Component {
+      Type          Subsystem
+      Name          "Scope"
+      Show          on
+      Position      [25, 30]
+      Direction     up
+      Flipped       off
+      LabelPosition none
+      Frame         [-20, -25; 20, 25]
+      SampleTime    "-1"
+      CodeGenDiscretizationMethod "2"
+      CodeGenTarget "Generic"
+      MaskDisplayLang "2"
+      MaskIconFrame on
+      MaskIconOpaque off
+      MaskIconRotates on
+      Schematic {
+        Location      [-934, 694; -419, 1152]
+        ZoomFactor    1.07595
+        SliderPosition [0, 0]
+        ShowBrowser   off
+        BrowserWidth  100
+        Component {
+          Type          Scope
+          Name          "PWM"
+          Show          on
+          Position      [130, 110]
+          Direction     up
+          Flipped       off
+          LabelPosition south
+          Frame         [-15, -25; 15, 25]
+          Location      [1598, 463; 1920, 1068]
+          State         "AAAA/wAAAAD9AAAAAgAAAAEAAAAAAAAAAPwCAAAAA/sAAAAQAFoAb"
+"wBvAG0AQQByAGUAYQAAAAAA/////wAAAK4A////+wAAABQAUwBhAHYAZQBkAFYAaQBlAHcAcwAAAA"
+"AA/////wAAAGgA////+wAAAAwAVAByAGEAYwBlAHMAAAAAAP////8AAABoAP///wAAAAMAAAGrAAA"
+"AlfwBAAAAAfsAAAAUAEQAYQB0AGEAVwBpAGQAZwBlAHQAAAAAAAAAAasAAABSAP///wAAAUIAAAJC"
+"AAAABAAAAAQAAAAIAAAACPwAAAABAAAAAgAAAAEAAAAOAFQAbwBvAGwAQgBhAHIBAAAAAP////8AA"
+"AAAAAAAAA=="
+          SavedViews    "AAAAAgAAAAA="
+          HeaderState   "{\"DefaultSecSize\":0,\"FirstSecSize\":128,\"Labels\""
+":[\"Delta\",\"Min\",\"Max\",\"Mean\"],\"VisualIdxs\":[6,3,5,4]}"
+          PlotPalettes  "AAAAAQAAAAEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+"QAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+"AAAAAAAAEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+          Axes          "4"
+          TimeRange     "5e-06"
+          ScrollingMode "2"
+          SingleTimeAxis "0"
+          Open          "1"
+          Ts            "2e-7"
+          SampleLimit   "0"
+          XAxisLabel    "Time / s"
+          ShowLegend    "1"
+          Axis {
+            Name          "buck_ho"
+            AutoScale     1
+            MinValue      0
+            MaxValue      40
+            Signals       {}
+            SignalTypes   [ ]
+            Untangle      0
+            KeepBaseline  off
+            BaselineValue 0
+          }
+          Axis {
+            Name          "buck_lo"
+            AutoScale     1
+            MinValue      -5
+            MaxValue      15
+            Signals       {}
+            SignalTypes   [ ]
+            Untangle      0
+            KeepBaseline  off
+            BaselineValue 0
+          }
+          Axis {
+            Name          "boost_ho"
+            AutoScale     1
+            MinValue      0
+            MaxValue      1
+            Signals       {}
+            SignalTypes   [ ]
+            Untangle      0
+            KeepBaseline  off
+            BaselineValue 0
+          }
+          Axis {
+            Name          "boost_lo"
+            AutoScale     1
+            MinValue      0
+            MaxValue      1
+            Signals       {}
+            SignalTypes   [ ]
+            Untangle      0
+            KeepBaseline  off
+            BaselineValue 0
+          }
+          Fourier {
+            SingleXAxis       on
+            AxisLabel         "Frequency / Hz"
+            Scaling           0
+            PhaseDisplay      0
+            ShowFourierLegend off
+            Axis {
+              Name          ""
+              AutoScale     1
+              MinValue      0
+              MaxValue      1
+              Signals       {}
+              Untangle      0
+              KeepBaseline  off
+              BaselineValue 0
+            }
+            Axis {
+              Name          ""
+              AutoScale     1
+              MinValue      0
+              MaxValue      1
+              Signals       {}
+              Untangle      0
+              KeepBaseline  off
+              BaselineValue 0
+            }
+            Axis {
+              Name          ""
+              AutoScale     1
+              MinValue      0
+              MaxValue      1
+              Signals       {}
+              Untangle      0
+              KeepBaseline  off
+              BaselineValue 0
+            }
+            Axis {
+              Name          ""
+              AutoScale     1
+              MinValue      0
+              MaxValue      1
+              Signals       {}
+              Untangle      0
+              KeepBaseline  off
+              BaselineValue 0
+            }
+          }
+        }
+        Component {
+          Type          From
+          Name          "From8"
+          Show          off
+          Position      [50, 95]
+          Direction     right
+          Flipped       off
+          LabelPosition south
+          Parameter {
+            Variable      "Tag"
+            Value         "buck_ho"
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          From
+          Name          "From11"
+          Show          off
+          Position      [90, 105]
+          Direction     right
+          Flipped       off
+          LabelPosition south
+          Parameter {
+            Variable      "Tag"
+            Value         "buck_lo"
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          From
+          Name          "From12"
+          Show          off
+          Position      [50, 115]
+          Direction     right
+          Flipped       off
+          LabelPosition south
+          Parameter {
+            Variable      "Tag"
+            Value         "boost_ho"
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          From
+          Name          "From13"
+          Show          off
+          Position      [90, 125]
+          Direction     right
+          Flipped       off
+          LabelPosition south
+          Parameter {
+            Variable      "Tag"
+            Value         "boost_lo"
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          Scope
+          Name          "Control"
+          Show          on
+          Position      [130, 175]
+          Direction     up
+          Flipped       off
+          LabelPosition south
+          Frame         [-15, -20; 15, 20]
+          Location      [1279, 30; 1597, 419]
+          State         "AAAA/wAAAAD9AAAAAgAAAAEAAAAAAAAAAPwCAAAAA/sAAAAQAFoAb"
+"wBvAG0AQQByAGUAYQAAAAAA/////wAAAIYA////+wAAABQAUwBhAHYAZQBkAFYAaQBlAHcAcwAAAA"
+"AA/////wAAAGgA////+wAAAAwAVAByAGEAYwBlAHMAAAAAAP////8AAABoAP///wAAAAMAAAGqAAA"
+"AvfwBAAAAAfsAAAAUAEQAYQB0AGEAVwBpAGQAZwBlAHQAAAAAAAAAAaoAAABSAP///wAAAT4AAAFq"
+"AAAABAAAAAQAAAAIAAAACPwAAAABAAAAAgAAAAEAAAAOAFQAbwBvAGwAQgBhAHIBAAAAAP////8AA"
+"AAAAAAAAA=="
+          SavedViews    "AAAAAgAAAAA="
+          HeaderState   "{\"DefaultSecSize\":0,\"FirstSecSize\":90,\"Labels\":"
+"[\"Delta\",\"Slope\",\"Min\",\"Max\",\"Mean\",\"RMS\"],\"VisualIdxs\":[6,7,3,"
+"5,4,9]}"
+          PlotPalettes  "AAAAAQAAAAEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+"QAAAAEAAAABAAAAAQL//y7g///MzAAAAAAAAQAAAAEAAAAAAQAAAAEAAAABAAAAAQAAAAEBAAAAAQ"
+"AAAAE/8AAAAAAAAAAAAAEAAAABAAAAAAEAAAABAAAAAQAAAAEC//8u4P//zMwAAAAAAAEAAAABAAA"
+"AAAEAAAABAAAAAQAAAAEAAAABAAAAAAEAAAABP/AAAAAAAAAAAAABAAAAAQA="
+          Axes          "3"
+          TimeRange     "0.0025"
+          ScrollingMode "2"
+          SingleTimeAxis "0"
+          Open          "1"
+          Ts            "2e-7"
+          SampleLimit   "0"
+          XAxisLabel    "Time / s"
+          ShowLegend    "1"
+          Axis {
+            Name          "ShutDown"
+            AutoScale     1
+            MinValue      9
+            MaxValue      60
+            Signals       {"Vin"}
+            SignalTypes   [ ]
+            Untangle      0
+            KeepBaseline  off
+            BaselineValue 0
+          }
+          Axis {
+            Name          "Discharge"
+            AutoScale     1
+            MinValue      -0.25
+            MaxValue      13
+            Signals       {"Vout"}
+            SignalTypes   [ ]
+            Untangle      0
+            KeepBaseline  off
+            BaselineValue 0
+          }
+          Axis {
+            Name          "Mode"
+            AutoScale     1
+            MinValue      -5
+            MaxValue      40
+            Signals       {"Iin"}
+            SignalTypes   [ ]
+            Untangle      0
+            KeepBaseline  off
+            BaselineValue 0
+          }
+          Fourier {
+            SingleXAxis       on
+            AxisLabel         "Frequency / Hz"
+            Scaling           0
+            PhaseDisplay      0
+            ShowFourierLegend off
+            Axis {
+              Name          ""
+              AutoScale     1
+              MinValue      0
+              MaxValue      1
+              Signals       {"Vin"}
+              Untangle      0
+              KeepBaseline  off
+              BaselineValue 0
+            }
+            Axis {
+              Name          ""
+              AutoScale     1
+              MinValue      0
+              MaxValue      1
+              Signals       {"Vout"}
+              Untangle      0
+              KeepBaseline  off
+              BaselineValue 0
+            }
+            Axis {
+              Name          ""
+              AutoScale     1
+              MinValue      0
+              MaxValue      1
+              Signals       {"Iin"}
+              Untangle      0
+              KeepBaseline  off
+              BaselineValue 0
+            }
+          }
+        }
+        Component {
+          Type          From
+          Name          "From21"
+          Show          off
+          Position      [105, 175]
+          Direction     right
+          Flipped       off
+          LabelPosition south
+          Parameter {
+            Variable      "Tag"
+            Value         "Discharge"
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          From
+          Name          "From22"
+          Show          off
+          Position      [55, 165]
+          Direction     right
+          Flipped       off
+          LabelPosition south
+          Parameter {
+            Variable      "Tag"
+            Value         "ShutDown"
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          From
+          Name          "From23"
+          Show          off
+          Position      [55, 185]
+          Direction     right
+          Flipped       off
+          LabelPosition south
+          Parameter {
+            Variable      "Tag"
+            Value         "Mode"
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          Scope
+          Name          "State"
+          Show          on
+          Position      [255, 30]
+          Direction     up
+          Flipped       off
+          LabelPosition south
+          Frame         [-15, -25; 15, 25]
+          Location      [1279, 463; 1597, 1068]
+          State         "AAAA/wAAAAD9AAAAAgAAAAEAAAAAAAAAAPwCAAAAA/sAAAAQAFoAb"
+"wBvAG0AQQByAGUAYQAAAAAA/////wAAAK4A////+wAAABQAUwBhAHYAZQBkAFYAaQBlAHcAcwAAAA"
+"AA/////wAAAGgA////+wAAAAwAVAByAGEAYwBlAHMAAAAAAP////8AAABoAP///wAAAAMAAANXAAA"
+"AvfwBAAAAAfsAAAAUAEQAYQB0AGEAVwBpAGQAZwBlAHQAAAAAAAAAA1cAAABSAP///wAAAT4AAAJC"
+"AAAABAAAAAQAAAAIAAAACPwAAAABAAAAAgAAAAEAAAAOAFQAbwBvAGwAQgBhAHIBAAAAAP////8AA"
+"AAAAAAAAA=="
+          SavedViews    "AAAAAgAAAAA="
+          HeaderState   "{\"DefaultSecSize\":0,\"FirstSecSize\":128,\"Labels\""
+":[\"Delta\",\"Slope\",\"Min\",\"Max\",\"Mean\",\"RMS\"],\"VisualIdxs\":[6,7,3"
+",5,4,9]}"
+          PlotPalettes  "AAAAAQAAAAEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+"QAAAAEAAAABAAAAAQL//y7g///MzAAAAAAAAQAAAAEAAAAAAQAAAAEAAAABAAAAAQAAAAEBAAAAAQ"
+"AAAAE/8AAAAAAAAAAAAAEAAAABAAAAAAEAAAABAAAAAQAAAAEC//8u4P//zMwAAAAAAAEAAAABAAA"
+"AAAEAAAABAAAAAQAAAAEAAAABAAAAAAEAAAABP/AAAAAAAAAAAAABAAAAAQAAAAABAAAAAQAAAAAA"
+"AAAAAAAAAAAAAAAAAAAAAAAAAA=="
+          Axes          "4"
+          TimeRange     "0.0025"
+          ScrollingMode "2"
+          SingleTimeAxis "0"
+          Open          "1"
+          Ts            "2e-7"
+          SampleLimit   "0"
+          XAxisLabel    "Time / s"
+          ShowLegend    "1"
+          Axis {
+            Name          base64 "WcO8a3PDvHo="
+            AutoScale     1
+            MinValue      9
+            MaxValue      60
+            Signals       {"Vin"}
+            SignalTypes   [ ]
+            Untangle      0
+            KeepBaseline  off
+            BaselineValue 0
+          }
+          Axis {
+            Name          base64 "WcO8a2UgSGF6xLFy"
+            AutoScale     1
+            MinValue      -0.25
+            MaxValue      13
+            Signals       {"Vout"}
+            SignalTypes   [ ]
+            Untangle      0
+            KeepBaseline  off
+            BaselineValue 0
+          }
+          Axis {
+            Name          base64 "WcO8a2UgQmHEn2zEsQ=="
+            AutoScale     1
+            MinValue      -5
+            MaxValue      40
+            Signals       {"Iin"}
+            SignalTypes   [ ]
+            Untangle      0
+            KeepBaseline  off
+            BaselineValue 0
+          }
+          Axis {
+            Name          "Vout Hedef"
+            AutoScale     1
+            MinValue      0
+            MaxValue      1
+            Signals       {}
+            SignalTypes   [ ]
+            Untangle      0
+            KeepBaseline  off
+            BaselineValue 0
+          }
+          Fourier {
+            SingleXAxis       on
+            AxisLabel         "Frequency / Hz"
+            Scaling           0
+            PhaseDisplay      0
+            ShowFourierLegend off
+            Axis {
+              Name          ""
+              AutoScale     1
+              MinValue      0
+              MaxValue      1
+              Signals       {"Vin"}
+              Untangle      0
+              KeepBaseline  off
+              BaselineValue 0
+            }
+            Axis {
+              Name          ""
+              AutoScale     1
+              MinValue      0
+              MaxValue      1
+              Signals       {"Vout"}
+              Untangle      0
+              KeepBaseline  off
+              BaselineValue 0
+            }
+            Axis {
+              Name          ""
+              AutoScale     1
+              MinValue      0
+              MaxValue      1
+              Signals       {"Iin"}
+              Untangle      0
+              KeepBaseline  off
+              BaselineValue 0
+            }
+            Axis {
+              Name          ""
+              AutoScale     1
+              MinValue      0
+              MaxValue      1
+              Signals       {}
+              Untangle      0
+              KeepBaseline  off
+              BaselineValue 0
+            }
+          }
+        }
+        Component {
+          Type          From
+          Name          "From24"
+          Show          off
+          Position      [225, 25]
+          Direction     right
+          Flipped       off
+          LabelPosition south
+          Parameter {
+            Variable      "Tag"
+            Value         base64 "WcO8a2UgSGF6xLFy"
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          From
+          Name          "From26"
+          Show          off
+          Position      [225, 35]
+          Direction     right
+          Flipped       off
+          LabelPosition south
+          Parameter {
+            Variable      "Tag"
+            Value         base64 "WcO8a2UgQmHEn2zEsQ=="
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          From
+          Name          "From27"
+          Show          off
+          Position      [225, 15]
+          Direction     right
+          Flipped       off
+          LabelPosition south
+          Parameter {
+            Variable      "Tag"
+            Value         base64 "WcO8a3PDvHo="
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          From
+          Name          "From28"
+          Show          off
+          Position      [225, 45]
+          Direction     right
+          Flipped       off
+          LabelPosition south
+          Parameter {
+            Variable      "Tag"
+            Value         "Vout Hedef"
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          Scope
+          Name          "Debug"
+          Show          on
+          Position      [255, 110]
+          Direction     up
+          Flipped       off
+          LabelPosition south
+          Frame         [-15, -30; 15, 30]
+          Location      [639, 30; 1277, 1077]
+          State         "AAAA/wAAAAD9AAAAAgAAAAEAAAAAAAAAAPwCAAAAA/sAAAAQAFoAb"
+"wBvAG0AQQByAGUAYQAAAAAA/////wAAANYA////+wAAABQAUwBhAHYAZQBkAFYAaQBlAHcAcwAAAA"
+"AA/////wAAAGgA////+wAAAAwAVAByAGEAYwBlAHMAAAAAAP////8AAABoAP///wAAAAMAAAJ+AAA"
+"BKfwBAAAAAfsAAAAUAEQAYQB0AGEAVwBpAGQAZwBlAHQAAAAAAAAAAn4AAABSAP///wAAAn4AAAP8"
+"AAAABAAAAAQAAAAIAAAACPwAAAABAAAAAgAAAAEAAAAOAFQAbwBvAGwAQgBhAHIBAAAAAP////8AA"
+"AAAAAAAAA=="
+          SavedViews    "AAAAAgAAAAA="
+          HeaderState   "{\"DefaultSecSize\":0,\"FirstSecSize\":179,\"Labels\""
+":[\"Delta\",\"Slope\",\"Min\",\"Max\",\"Mean\"],\"VisualIdxs\":[7,8,3,4,6]}"
+          PlotPalettes  "AAAAAQAAAAEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+"QAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+"AAAAAAAAEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAEAAAAAAAAAAAAAAAAAAAA"
+"AAAAAAAAAAAA="
+          Axes          "5"
+          TimeRange     "0.0025"
+          ScrollingMode "2"
+          SingleTimeAxis "0"
+          Open          "1"
+          Ts            "2e-7"
+          SampleLimit   "0"
+          XAxisLabel    "Time / s"
+          ShowLegend    "1"
+          Axis {
+            Name          "P-Term"
+            AutoScale     1
+            MinValue      0.345
+            MaxValue      0.68
+            Signals       {"integrator"}
+            SignalTypes   [ ]
+            Untangle      0
+            KeepBaseline  off
+            BaselineValue 0.5
+          }
+          Axis {
+            Name          "I-Term"
+            AutoScale     1
+            MinValue      -0.05
+            MaxValue      1.05
+            Signals       {"error"}
+            SignalTypes   [ ]
+            Untangle      0
+            KeepBaseline  off
+            BaselineValue 0.5
+          }
+          Axis {
+            Name          "D-Term"
+            AutoScale     1
+            MinValue      -0.05
+            MaxValue      1.05
+            Signals       {"ss.duty_boost_current"}
+            SignalTypes   [ ]
+            Untangle      0
+            KeepBaseline  off
+            BaselineValue -0.01
+          }
+          Axis {
+            Name          "Buck_debug"
+            AutoScale     0
+            MinValue      -0.05
+            MaxValue      105
+            Signals       {"ss.duty_boost_target"}
+            SignalTypes   [ ]
+            Untangle      0
+            KeepBaseline  on
+            BaselineValue -0.01
+          }
+          Axis {
+            Name          "Boost_debug"
+            AutoScale     0
+            MinValue      -0.05
+            MaxValue      105
+            Signals       {"thermal flags"}
+            SignalTypes   [ ]
+            Untangle      0
+            KeepBaseline  off
+            BaselineValue 0
+          }
+          Fourier {
+            SingleXAxis       on
+            AxisLabel         "Frequency / Hz"
+            Scaling           0
+            PhaseDisplay      0
+            ShowFourierLegend off
+            Axis {
+              Name          ""
+              AutoScale     1
+              MinValue      0
+              MaxValue      1
+              Signals       {"integrator"}
+              Untangle      0
+              KeepBaseline  off
+              BaselineValue 0
+            }
+            Axis {
+              Name          ""
+              AutoScale     1
+              MinValue      0
+              MaxValue      1
+              Signals       {"error"}
+              Untangle      0
+              KeepBaseline  off
+              BaselineValue 0
+            }
+            Axis {
+              Name          ""
+              AutoScale     1
+              MinValue      0
+              MaxValue      1
+              Signals       {"ss.duty_boost_current"}
+              Untangle      0
+              KeepBaseline  off
+              BaselineValue 0
+            }
+            Axis {
+              Name          ""
+              AutoScale     1
+              MinValue      0
+              MaxValue      1
+              Signals       {"ss.duty_boost_target"}
+              Untangle      0
+              KeepBaseline  off
+              BaselineValue 0
+            }
+            Axis {
+              Name          ""
+              AutoScale     1
+              MinValue      0
+              MaxValue      1
+              Signals       {"thermal flags"}
+              Untangle      0
+              KeepBaseline  off
+              BaselineValue 0
+            }
+          }
+        }
+        Component {
+          Type          From
+          Name          "From16"
+          Show          off
+          Position      [95, 25]
+          Direction     right
+          Flipped       off
+          LabelPosition south
+          Parameter {
+            Variable      "Tag"
+            Value         "Vout_real"
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          From
+          Name          "From17"
+          Show          off
+          Position      [95, 45]
+          Direction     right
+          Flipped       off
+          LabelPosition south
+          Parameter {
+            Variable      "Tag"
+            Value         "I_L_real"
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          From
+          Name          "From18"
+          Show          off
+          Position      [45, 35]
+          Direction     right
+          Flipped       off
+          LabelPosition south
+          Parameter {
+            Variable      "Tag"
+            Value         "Iin_real"
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          Scope
+          Name          "Real"
+          Show          on
+          Position      [130, 35]
+          Direction     up
+          Flipped       off
+          LabelPosition south
+          Frame         [-15, -30; 15, 30]
+          Location      [0, 23; 2560, 1419]
+          State         "AAAA/wAAAAD9AAAAAgAAAAEAAAC0AAAD8/wCAAAAA/sAAAAMAFQAc"
+"gBhAGMAZQBzAAAAADAAAAPzAAAAYgD////7AAAAEABaAG8AbwBtAEEAcgBlAGEAAAAAAP////8AAA"
+"DQAP////sAAAAUAFMAYQB2AGUAZABWAGkAZQB3AHMAAAAAMAAAAd0AAABiAP///wAAAAMAAAJ9AAA"
+"BBfwBAAAAAfsAAAAUAEQAYQB0AGEAVwBpAGQAZwBlAHQAAAAAAAAAAn0AAABEAP///wAACgAAAAVV"
+"AAAABAAAAAQAAAAIAAAACPwAAAABAAAAAgAAAAEAAAAOAFQAbwBvAGwAQgBhAHIBAAAAAP////8AA"
+"AAAAAAAAA=="
+          SavedViews    "AAAAAgAAAAEAAAAOAEQAZQBmAGEAdQBsAHQAAAAAAAAAAD/gAAAAA"
+"AAAAAAABQB/+AAAAAAAAH/4AAAAAAAAAH/4AAAAAAAAf/gAAAAAAAAAf/gAAAAAAAB/+AAAAAAAAA"
+"B/+AAAAAAAAH/4AAAAAAAAAH/4AAAAAAAAf/gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+          HeaderState   "{\"DefaultSecSize\":0,\"FirstSecSize\":91,\"Labels\":"
+"[\"Delta\",\"Slope\",\"Min\",\"Max\",\"Mean\",\"RMS\"],\"VisualIdxs\":[6,7,3,"
+"5,4,9]}"
+          PlotPalettes  "AAAAAQAAAAEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+"QAAAAEAAAABAAAAAQL//y7g///MzAAAAAAAAQAAAAEAAAAAAQAAAAEAAAABAAAAAQAAAAEBAAAAAQ"
+"AAAAE/8AAAAAAAAAAAAAEAAAABAAAAAAEAAAABAAAAAQAAAAEC//8u4P//zMwAAAAAAAEAAAABAAA"
+"AAAEAAAABAAAAAQAAAAEAAAABAAAAAAEAAAABP/AAAAAAAAAAAAABAAAAAQAAAAABAAAAAQAAAAAA"
+"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+          Axes          "5"
+          TimeRange     "0.0025"
+          ScrollingMode "2"
+          SingleTimeAxis "0"
+          Open          "1"
+          Ts            "2e-7"
+          SampleLimit   "0"
+          XAxisLabel    "Time / s"
+          ShowLegend    "1"
+          Axis {
+            Name          "Vin"
+            AutoScale     0
+            MinValue      0
+            MaxValue      48
+            Signals       {"Vin"}
+            SignalTypes   [ ]
+            Untangle      0
+            KeepBaseline  off
+            BaselineValue 0
+          }
+          Axis {
+            Name          "Vout"
+            AutoScale     0
+            MinValue      -0.25
+            MaxValue      16
+            Signals       {"Vout"}
+            SignalTypes   [ ]
+            Untangle      0
+            KeepBaseline  off
+            BaselineValue 0
+          }
+          Axis {
+            Name          "Iin"
+            AutoScale     0
+            MinValue      -5
+            MaxValue      40
+            Signals       {"Iin"}
+            SignalTypes   [ ]
+            Untangle      0
+            KeepBaseline  off
+            BaselineValue 0
+          }
+          Axis {
+            Name          "I_L"
+            AutoScale     0
+            MinValue      -5
+            MaxValue      40
+            Signals       {"I_L"}
+            SignalTypes   [ ]
+            Untangle      0
+            KeepBaseline  off
+            BaselineValue 0
+          }
+          Axis {
+            Name          "Iout"
+            AutoScale     1
+            MinValue      0
+            MaxValue      1
+            Signals       {"Iout"}
+            SignalTypes   [ ]
+            Untangle      0
+            KeepBaseline  off
+            BaselineValue 0
+          }
+          Fourier {
+            SingleXAxis       on
+            AxisLabel         "Frequency / Hz"
+            Scaling           0
+            PhaseDisplay      0
+            ShowFourierLegend off
+            Axis {
+              Name          ""
+              AutoScale     1
+              MinValue      0
+              MaxValue      1
+              Signals       {"Vin"}
+              Untangle      0
+              KeepBaseline  off
+              BaselineValue 0
+            }
+            Axis {
+              Name          ""
+              AutoScale     1
+              MinValue      0
+              MaxValue      1
+              Signals       {"Vout"}
+              Untangle      0
+              KeepBaseline  off
+              BaselineValue 0
+            }
+            Axis {
+              Name          ""
+              AutoScale     1
+              MinValue      0
+              MaxValue      1
+              Signals       {"Iin"}
+              Untangle      0
+              KeepBaseline  off
+              BaselineValue 0
+            }
+            Axis {
+              Name          ""
+              AutoScale     1
+              MinValue      0
+              MaxValue      1
+              Signals       {"I_L"}
+              Untangle      0
+              KeepBaseline  off
+              BaselineValue 0
+            }
+            Axis {
+              Name          ""
+              AutoScale     1
+              MinValue      0
+              MaxValue      1
+              Signals       {"Iout"}
+              Untangle      0
+              KeepBaseline  off
+              BaselineValue 0
+            }
+          }
+        }
+        Component {
+          Type          From
+          Name          "From19"
+          Show          off
+          Position      [45, 55]
+          Direction     right
+          Flipped       off
+          LabelPosition south
+          Parameter {
+            Variable      "Tag"
+            Value         "Iout_real"
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          From
+          Name          "From20"
+          Show          off
+          Position      [45, 15]
+          Direction     right
+          Flipped       off
+          LabelPosition south
+          Parameter {
+            Variable      "Tag"
+            Value         "Vin_real"
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          From
+          Name          "From2"
+          Show          off
+          Position      [230, 90]
+          Direction     left
+          Flipped       on
+          LabelPosition south
+          Parameter {
+            Variable      "Tag"
+            Value         "P term"
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          From
+          Name          "From3"
+          Show          off
+          Position      [230, 100]
+          Direction     left
+          Flipped       on
+          LabelPosition south
+          Parameter {
+            Variable      "Tag"
+            Value         "I term"
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          From
+          Name          "From4"
+          Show          off
+          Position      [230, 110]
+          Direction     left
+          Flipped       on
+          LabelPosition south
+          Parameter {
+            Variable      "Tag"
+            Value         "D term"
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          From
+          Name          "From5"
+          Show          off
+          Position      [230, 120]
+          Direction     right
+          Flipped       off
+          LabelPosition south
+          Parameter {
+            Variable      "Tag"
+            Value         "Buck_debug"
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          From
+          Name          "From6"
+          Show          off
+          Position      [230, 130]
+          Direction     right
+          Flipped       off
+          LabelPosition south
+          Parameter {
+            Variable      "Tag"
+            Value         "Boost_debug"
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          Scope
+          Name          "SYS"
+          Show          on
+          Position      [310, 180]
+          Direction     up
+          Flipped       off
+          LabelPosition south
+          Frame         [-15, -20; 15, 20]
+          Location      [1599, 30; 1920, 419]
+          State         "AAAA/wAAAAD9AAAAAgAAAAEAAAAAAAAAAPwCAAAAA/sAAAAQAFoAb"
+"wBvAG0AQQByAGUAYQAAAAAA/////wAAAIYA////+wAAABQAUwBhAHYAZQBkAFYAaQBlAHcAcwAAAA"
+"AA/////wAAAGgA////+wAAAAwAVAByAGEAYwBlAHMAAAAAAP////8AAABoAP///wAAAAMAAAE/AAA"
+"AZ/wBAAAAAfsAAAAUAEQAYQB0AGEAVwBpAGQAZwBlAHQAAAAAAAAAAT8AAABSAP///wAAAUEAAAFq"
+"AAAABAAAAAQAAAAIAAAACPwAAAABAAAAAgAAAAEAAAAOAFQAbwBvAGwAQgBhAHIBAAAAAP////8AA"
+"AAAAAAAAA=="
+          SavedViews    "AAAAAgAAAAA="
+          HeaderState   "{\"DefaultSecSize\":0,\"FirstSecSize\":105,\"Labels\""
+":[\"Delta\",\"Slope\",\"Min\",\"Max\",\"Mean\"],\"VisualIdxs\":[7,10,3,5,4]}"
+          PlotPalettes  "AAAAAQAAAAEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+"QAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+"AAAA=="
+          Axes          "3"
+          TimeRange     "0.0025"
+          ScrollingMode "2"
+          SingleTimeAxis "0"
+          Open          "1"
+          Ts            "1e-8"
+          SampleLimit   "0"
+          XAxisLabel    "Time / s"
+          ShowLegend    "1"
+          Axis {
+            Name          "sys_state "
+            AutoScale     1
+            MinValue      0
+            MaxValue      1
+            Signals       {}
+            SignalTypes   [ ]
+            Untangle      0
+            KeepBaseline  off
+            BaselineValue 0
+          }
+          Axis {
+            Name          "ss.phase"
+            AutoScale     0
+            MinValue      -0.05
+            MaxValue      11
+            Signals       {}
+            SignalTypes   [ ]
+            Untangle      0
+            KeepBaseline  off
+            BaselineValue 0
+          }
+          Axis {
+            Name          "filt_vin "
+            AutoScale     1
+            MinValue      0
+            MaxValue      1
+            Signals       {}
+            SignalTypes   [ ]
+            Untangle      0
+            KeepBaseline  off
+            BaselineValue 0
+          }
+          Fourier {
+            SingleXAxis       on
+            AxisLabel         "Frequency / Hz"
+            Scaling           0
+            PhaseDisplay      0
+            ShowFourierLegend off
+            Axis {
+              Name          ""
+              AutoScale     1
+              MinValue      0
+              MaxValue      1
+              Signals       {}
+              Untangle      0
+              KeepBaseline  off
+              BaselineValue 0
+            }
+            Axis {
+              Name          ""
+              AutoScale     1
+              MinValue      0
+              MaxValue      1
+              Signals       {}
+              Untangle      0
+              KeepBaseline  off
+              BaselineValue 0
+            }
+            Axis {
+              Name          ""
+              AutoScale     1
+              MinValue      0
+              MaxValue      1
+              Signals       {}
+              Untangle      0
+              KeepBaseline  off
+              BaselineValue 0
+            }
+          }
+        }
+        Component {
+          Type          From
+          Name          "From31"
+          Show          off
+          Position      [200, 170]
+          Direction     left
+          Flipped       on
+          LabelPosition south
+          Parameter {
+            Variable      "Tag"
+            Value         "sys.state"
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          From
+          Name          "From32"
+          Show          off
+          Position      [200, 180]
+          Direction     left
+          Flipped       on
+          LabelPosition south
+          Parameter {
+            Variable      "Tag"
+            Value         "ss.phase"
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          From
+          Name          "From33"
+          Show          off
+          Position      [200, 190]
+          Direction     left
+          Flipped       on
+          LabelPosition south
+          Parameter {
+            Variable      "Tag"
+            Value         "filt_vin"
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          Gain
+          Name          "Gain2"
+          Show          off
+          Position      [245, 180]
+          Direction     right
+          Flipped       off
+          LabelPosition south
+          Parameter {
+            Variable      "K"
+            Value         "[10/3 , 10/3 , 40.4]"
+            Show          off
+          }
+          Parameter {
+            Variable      "Multiplication"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "OutputDataType"
+            Value         "11"
+            Show          off
+          }
+          Parameter {
+            Variable      "DataTypeOverflowMode"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "GainDataType"
+            Value         "11"
+            Show          off
+          }
+        }
+        Component {
+          Type          SignalMux
+          Name          "Mux1"
+          Show          off
+          Position      [210, 180]
+          Direction     right
+          Flipped       off
+          LabelPosition south
+          Frame         [-2, -15; 7, 15]
+          Parameter {
+            Variable      "Width"
+            Value         "3"
+            Show          off
+          }
+        }
+        Component {
+          Type          SignalDemux
+          Name          "Demux3"
+          Show          off
+          Position      [280, 180]
+          Direction     right
+          Flipped       on
+          LabelPosition south
+          Frame         [-7, -15; 2, 15]
+          Parameter {
+            Variable      "Width"
+            Value         "3"
+            Show          off
+          }
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "From8"
+          SrcTerminal   1
+          DstComponent  "PWM"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "From11"
+          SrcTerminal   1
+          DstComponent  "PWM"
+          DstTerminal   2
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "From12"
+          SrcTerminal   1
+          DstComponent  "PWM"
+          DstTerminal   3
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "From13"
+          SrcTerminal   1
+          DstComponent  "PWM"
+          DstTerminal   4
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "From21"
+          SrcTerminal   1
+          DstComponent  "Control"
+          DstTerminal   2
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "From24"
+          SrcTerminal   1
+          DstComponent  "State"
+          DstTerminal   2
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "From27"
+          SrcTerminal   1
+          DstComponent  "State"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "From26"
+          SrcTerminal   1
+          DstComponent  "State"
+          DstTerminal   3
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "From22"
+          SrcTerminal   1
+          DstComponent  "Control"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "From23"
+          SrcTerminal   1
+          DstComponent  "Control"
+          DstTerminal   3
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "From20"
+          SrcTerminal   1
+          DstComponent  "Real"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "From16"
+          SrcTerminal   1
+          DstComponent  "Real"
+          DstTerminal   2
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "From17"
+          SrcTerminal   1
+          DstComponent  "Real"
+          DstTerminal   4
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "From18"
+          SrcTerminal   1
+          DstComponent  "Real"
+          DstTerminal   3
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "From19"
+          SrcTerminal   1
+          DstComponent  "Real"
+          DstTerminal   5
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "From28"
+          SrcTerminal   1
+          DstComponent  "State"
+          DstTerminal   4
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "From2"
+          SrcTerminal   1
+          DstComponent  "Debug"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "From3"
+          SrcTerminal   1
+          DstComponent  "Debug"
+          DstTerminal   2
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "From4"
+          SrcTerminal   1
+          DstComponent  "Debug"
+          DstTerminal   3
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "From5"
+          SrcTerminal   1
+          DstComponent  "Debug"
+          DstTerminal   4
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "From6"
+          SrcTerminal   1
+          DstComponent  "Debug"
+          DstTerminal   5
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "Mux1"
+          SrcTerminal   1
+          DstComponent  "Gain2"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "Gain2"
+          SrcTerminal   2
+          DstComponent  "Demux3"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "From31"
+          SrcTerminal   1
+          DstComponent  "Mux1"
+          DstTerminal   2
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "From32"
+          SrcTerminal   1
+          DstComponent  "Mux1"
+          DstTerminal   3
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "From33"
+          SrcTerminal   1
+          DstComponent  "Mux1"
+          DstTerminal   4
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "Demux3"
+          SrcTerminal   2
+          DstComponent  "SYS"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "Demux3"
+          SrcTerminal   3
+          DstComponent  "SYS"
+          DstTerminal   2
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "Demux3"
+          SrcTerminal   4
+          DstComponent  "SYS"
+          DstTerminal   3
+        }
+      }
+    }
+    Component {
+      Type          Subsystem
+      Name          "From File"
+      Show          on
+      Position      [85, 30]
+      Direction     up
+      Flipped       off
+      LabelPosition none
+      Frame         [-25, -25; 25, 25]
+      SampleTime    "-1"
+      CodeGenDiscretizationMethod "2"
+      CodeGenTarget "Generic"
+      MaskDisplayLang "2"
+      MaskIconFrame on
+      MaskIconOpaque off
+      MaskIconRotates on
+      Schematic {
+        Location      [1328, 91; 1883, 444]
+        ZoomFactor    1.23634
+        SliderPosition [0, 0]
+        ShowBrowser   off
+        BrowserWidth  100
+        Component {
+          Type          FromFile
+          Name          "From File"
+          Show          off
+          Position      [295, 145]
+          Direction     right
+          Flipped       on
+          LabelPosition north
+          Parameter {
+            Variable      "Filename"
+            Value         "FF_Sistem"
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "FileType"
+            Value         "2"
+            Show          off
+          }
+          Parameter {
+            Variable      "Width"
+            Value         "3"
+            Show          off
+          }
+          Parameter {
+            Variable      "LeftExtrapolation"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "LeftValue"
+            Value         "0"
+            Show          off
+          }
+          Parameter {
+            Variable      "Interpolation"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "RightExtrapolation"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "RightValue"
+            Value         "0"
+            Show          off
+          }
+          Parameter {
+            Variable      "LocateDiscontinuities"
+            Value         "1"
+            Show          off
+          }
+        }
+        Component {
+          Type          SignalDemux
+          Name          "Demux"
+          Show          off
+          Position      [70, 35]
+          Direction     right
+          Flipped       off
+          LabelPosition south
+          Frame         [-2, -25; 7, 25]
+          Parameter {
+            Variable      "Width"
+            Value         "5"
+            Show          off
+          }
+        }
+        Component {
+          Type          SignalDemux
+          Name          "Demux1"
+          Show          off
+          Position      [70, 95]
+          Direction     right
+          Flipped       off
+          LabelPosition south
+          Frame         [-2, -20; 7, 20]
+          Parameter {
+            Variable      "Width"
+            Value         "4"
+            Show          off
+          }
+        }
+        Component {
+          Type          SignalDemux
+          Name          "Demux2"
+          Show          off
+          Position      [70, 145]
+          Direction     right
+          Flipped       off
+          LabelPosition south
+          Frame         [-2, -15; 7, 15]
+          Parameter {
+            Variable      "Width"
+            Value         "3"
+            Show          off
+          }
+        }
+        Component {
+          Type          SignalDemux
+          Name          "Demux3"
+          Show          off
+          Position      [250, 145]
+          Direction     right
+          Flipped       off
+          LabelPosition south
+          Frame         [-2, -15; 7, 15]
+          Parameter {
+            Variable      "Width"
+            Value         "3"
+            Show          off
+          }
+        }
+        Component {
+          Type          SignalDemux
+          Name          "Demux5"
+          Show          off
+          Position      [250, 30]
+          Direction     right
+          Flipped       off
+          LabelPosition south
+          Frame         [-2, -20; 7, 20]
+          Parameter {
+            Variable      "Width"
+            Value         "4"
+            Show          off
+          }
+        }
+        Component {
+          Type          Goto
+          Name          "Goto"
+          Show          off
+          Position      [55, 80]
+          Direction     right
+          Flipped       on
+          LabelPosition north
+          Parameter {
+            Variable      "Tag"
+            Value         "buck_ho"
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "3"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          Goto
+          Name          "Goto1"
+          Show          off
+          Position      [55, 90]
+          Direction     right
+          Flipped       on
+          LabelPosition north
+          Parameter {
+            Variable      "Tag"
+            Value         "buck_lo"
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "3"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          Goto
+          Name          "Goto2"
+          Show          off
+          Position      [55, 110]
+          Direction     right
+          Flipped       on
+          LabelPosition north
+          Parameter {
+            Variable      "Tag"
+            Value         "boost_lo"
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "3"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          Goto
+          Name          "Goto3"
+          Show          off
+          Position      [55, 100]
+          Direction     right
+          Flipped       on
+          LabelPosition north
+          Parameter {
+            Variable      "Tag"
+            Value         "boost_ho"
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "3"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          Goto
+          Name          "Goto4"
+          Show          off
+          Position      [55, 15]
+          Direction     right
+          Flipped       on
+          LabelPosition north
+          Parameter {
+            Variable      "Tag"
+            Value         "Vin_real"
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "3"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          Goto
+          Name          "Goto5"
+          Show          off
+          Position      [55, 25]
+          Direction     right
+          Flipped       on
+          LabelPosition north
+          Parameter {
+            Variable      "Tag"
+            Value         "Vout_real"
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "3"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          Goto
+          Name          "Goto6"
+          Show          off
+          Position      [55, 45]
+          Direction     right
+          Flipped       on
+          LabelPosition north
+          Parameter {
+            Variable      "Tag"
+            Value         "I_L_real"
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "3"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          Goto
+          Name          "Goto7"
+          Show          off
+          Position      [55, 55]
+          Direction     right
+          Flipped       on
+          LabelPosition north
+          Parameter {
+            Variable      "Tag"
+            Value         "Iout_real"
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "3"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          Goto
+          Name          "Goto8"
+          Show          off
+          Position      [55, 35]
+          Direction     right
+          Flipped       on
+          LabelPosition north
+          Parameter {
+            Variable      "Tag"
+            Value         "Iin_real"
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "3"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          Goto
+          Name          "Goto9"
+          Show          off
+          Position      [55, 145]
+          Direction     right
+          Flipped       on
+          LabelPosition north
+          Parameter {
+            Variable      "Tag"
+            Value         "Discharge"
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "3"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          Goto
+          Name          "Goto10"
+          Show          off
+          Position      [55, 135]
+          Direction     right
+          Flipped       on
+          LabelPosition north
+          Parameter {
+            Variable      "Tag"
+            Value         "ShutDown"
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "3"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          Goto
+          Name          "Goto11"
+          Show          off
+          Position      [55, 155]
+          Direction     right
+          Flipped       on
+          LabelPosition north
+          Parameter {
+            Variable      "Tag"
+            Value         "Mode"
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "3"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          Goto
+          Name          "Goto12"
+          Show          off
+          Position      [235, 135]
+          Direction     left
+          Flipped       off
+          LabelPosition north
+          Parameter {
+            Variable      "Tag"
+            Value         "sys.state"
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "3"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          Goto
+          Name          "Goto13"
+          Show          off
+          Position      [235, 145]
+          Direction     left
+          Flipped       off
+          LabelPosition north
+          Parameter {
+            Variable      "Tag"
+            Value         "ss.phase"
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "3"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          Goto
+          Name          "Goto14"
+          Show          off
+          Position      [235, 155]
+          Direction     left
+          Flipped       off
+          LabelPosition north
+          Parameter {
+            Variable      "Tag"
+            Value         "filt_vin"
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "3"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          Goto
+          Name          "Goto15"
+          Show          off
+          Position      [235, 25]
+          Direction     right
+          Flipped       on
+          LabelPosition north
+          Parameter {
+            Variable      "Tag"
+            Value         base64 "WcO8a2UgSGF6xLFy"
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "3"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          Goto
+          Name          "Goto16"
+          Show          off
+          Position      [235, 35]
+          Direction     right
+          Flipped       on
+          LabelPosition north
+          Parameter {
+            Variable      "Tag"
+            Value         base64 "WcO8a2UgQmHEn2zEsQ=="
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "3"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          Goto
+          Name          "Goto17"
+          Show          off
+          Position      [235, 15]
+          Direction     right
+          Flipped       on
+          LabelPosition north
+          Parameter {
+            Variable      "Tag"
+            Value         base64 "WcO8a3PDvHo="
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "3"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          Goto
+          Name          "Goto26"
+          Show          off
+          Position      [235, 45]
+          Direction     right
+          Flipped       on
+          LabelPosition north
+          Parameter {
+            Variable      "Tag"
+            Value         "Vout Hedef"
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "3"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          FromFile
+          Name          "From File1"
+          Show          off
+          Position      [115, 145]
+          Direction     right
+          Flipped       on
+          LabelPosition north
+          Parameter {
+            Variable      "Filename"
+            Value         "FF_Kontrol"
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "FileType"
+            Value         "2"
+            Show          off
+          }
+          Parameter {
+            Variable      "Width"
+            Value         "3"
+            Show          off
+          }
+          Parameter {
+            Variable      "LeftExtrapolation"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "LeftValue"
+            Value         "0"
+            Show          off
+          }
+          Parameter {
+            Variable      "Interpolation"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "RightExtrapolation"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "RightValue"
+            Value         "0"
+            Show          off
+          }
+          Parameter {
+            Variable      "LocateDiscontinuities"
+            Value         "1"
+            Show          off
+          }
+        }
+        Component {
+          Type          FromFile
+          Name          "From File3"
+          Show          off
+          Position      [115, 35]
+          Direction     right
+          Flipped       on
+          LabelPosition north
+          Parameter {
+            Variable      "Filename"
+            Value         "FF_Gercek"
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "FileType"
+            Value         "2"
+            Show          off
+          }
+          Parameter {
+            Variable      "Width"
+            Value         "5"
+            Show          off
+          }
+          Parameter {
+            Variable      "LeftExtrapolation"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "LeftValue"
+            Value         "0"
+            Show          off
+          }
+          Parameter {
+            Variable      "Interpolation"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "RightExtrapolation"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "RightValue"
+            Value         "0"
+            Show          off
+          }
+          Parameter {
+            Variable      "LocateDiscontinuities"
+            Value         "1"
+            Show          off
+          }
+        }
+        Component {
+          Type          FromFile
+          Name          "From File5"
+          Show          off
+          Position      [295, 30]
+          Direction     right
+          Flipped       on
+          LabelPosition north
+          Parameter {
+            Variable      "Filename"
+            Value         "FF_Durum"
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "FileType"
+            Value         "2"
+            Show          off
+          }
+          Parameter {
+            Variable      "Width"
+            Value         "4"
+            Show          off
+          }
+          Parameter {
+            Variable      "LeftExtrapolation"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "LeftValue"
+            Value         "0"
+            Show          off
+          }
+          Parameter {
+            Variable      "Interpolation"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "RightExtrapolation"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "RightValue"
+            Value         "0"
+            Show          off
+          }
+          Parameter {
+            Variable      "LocateDiscontinuities"
+            Value         "1"
+            Show          off
+          }
+        }
+        Component {
+          Type          FromFile
+          Name          "From File7"
+          Show          off
+          Position      [115, 95]
+          Direction     right
+          Flipped       on
+          LabelPosition north
+          Parameter {
+            Variable      "Filename"
+            Value         "FF_PWM"
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "FileType"
+            Value         "2"
+            Show          off
+          }
+          Parameter {
+            Variable      "Width"
+            Value         "4"
+            Show          off
+          }
+          Parameter {
+            Variable      "LeftExtrapolation"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "LeftValue"
+            Value         "0"
+            Show          off
+          }
+          Parameter {
+            Variable      "Interpolation"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "RightExtrapolation"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "RightValue"
+            Value         "0"
+            Show          off
+          }
+          Parameter {
+            Variable      "LocateDiscontinuities"
+            Value         "1"
+            Show          off
+          }
+        }
+        Component {
+          Type          Goto
+          Name          "Goto20"
+          Show          off
+          Position      [235, 100]
+          Direction     right
+          Flipped       on
+          LabelPosition north
+          Parameter {
+            Variable      "Tag"
+            Value         "Buck_debug"
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "3"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          Goto
+          Name          "Goto21"
+          Show          off
+          Position      [235, 110]
+          Direction     right
+          Flipped       on
+          LabelPosition north
+          Parameter {
+            Variable      "Tag"
+            Value         "Boost_debug"
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "3"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          Goto
+          Name          "Goto22"
+          Show          off
+          Position      [235, 70]
+          Direction     left
+          Flipped       off
+          LabelPosition north
+          Parameter {
+            Variable      "Tag"
+            Value         "P term"
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "3"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          Goto
+          Name          "Goto23"
+          Show          off
+          Position      [235, 80]
+          Direction     left
+          Flipped       off
+          LabelPosition north
+          Parameter {
+            Variable      "Tag"
+            Value         "I term"
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "3"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          Goto
+          Name          "Goto24"
+          Show          off
+          Position      [235, 90]
+          Direction     left
+          Flipped       off
+          LabelPosition north
+          Parameter {
+            Variable      "Tag"
+            Value         "D term"
+            Show          off
+          }
+          Parameter {
+            Variable      "Visibility"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "NoMatchingCounterpartAction"
+            Value         "3"
+            Show          off
+          }
+          Parameter {
+            Variable      "CustomMessage"
+            Value         ""
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "HighlightLevel"
+            Value         "0"
+            Show          off
+          }
+        }
+        Component {
+          Type          SignalDemux
+          Name          "Demux6"
+          Show          off
+          Position      [250, 90]
+          Direction     right
+          Flipped       off
+          LabelPosition south
+          Frame         [-2, -25; 7, 25]
+          Parameter {
+            Variable      "Width"
+            Value         "5"
+            Show          off
+          }
+        }
+        Component {
+          Type          FromFile
+          Name          "From File6"
+          Show          off
+          Position      [300, 90]
+          Direction     right
+          Flipped       on
+          LabelPosition north
+          Parameter {
+            Variable      "Filename"
+            Value         "FF_HataAyiklama"
+            Show          off
+            Evaluate      on
+          }
+          Parameter {
+            Variable      "FileType"
+            Value         "2"
+            Show          off
+          }
+          Parameter {
+            Variable      "Width"
+            Value         "5"
+            Show          off
+          }
+          Parameter {
+            Variable      "LeftExtrapolation"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "LeftValue"
+            Value         "0"
+            Show          off
+          }
+          Parameter {
+            Variable      "Interpolation"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "RightExtrapolation"
+            Value         "1"
+            Show          off
+          }
+          Parameter {
+            Variable      "RightValue"
+            Value         "0"
+            Show          off
+          }
+          Parameter {
+            Variable      "LocateDiscontinuities"
+            Value         "1"
+            Show          off
+          }
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "Demux"
+          SrcTerminal   2
+          DstComponent  "Goto4"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "Demux"
+          SrcTerminal   3
+          DstComponent  "Goto5"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "Demux"
+          SrcTerminal   5
+          DstComponent  "Goto6"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "Demux"
+          SrcTerminal   6
+          DstComponent  "Goto7"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "Demux"
+          SrcTerminal   4
+          DstComponent  "Goto8"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "Demux1"
+          SrcTerminal   2
+          DstComponent  "Goto"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "Demux1"
+          SrcTerminal   3
+          DstComponent  "Goto1"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "Demux1"
+          SrcTerminal   5
+          DstComponent  "Goto2"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "Demux3"
+          SrcTerminal   2
+          DstComponent  "Goto12"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "Demux3"
+          SrcTerminal   3
+          DstComponent  "Goto13"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "Demux3"
+          SrcTerminal   4
+          DstComponent  "Goto14"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "Demux2"
+          SrcTerminal   3
+          DstComponent  "Goto9"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "Demux2"
+          SrcTerminal   2
+          DstComponent  "Goto10"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "Demux2"
+          SrcTerminal   4
+          DstComponent  "Goto11"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "Demux5"
+          SrcTerminal   4
+          DstComponent  "Goto16"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "Demux5"
+          SrcTerminal   3
+          DstComponent  "Goto15"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "Demux5"
+          SrcTerminal   2
+          DstComponent  "Goto17"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "Demux1"
+          SrcTerminal   4
+          DstComponent  "Goto3"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "From File"
+          SrcTerminal   1
+          DstComponent  "Demux3"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "From File1"
+          SrcTerminal   1
+          DstComponent  "Demux2"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "From File3"
+          SrcTerminal   1
+          DstComponent  "Demux"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "From File5"
+          SrcTerminal   1
+          DstComponent  "Demux5"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "From File7"
+          SrcTerminal   1
+          DstComponent  "Demux1"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "Demux5"
+          SrcTerminal   5
+          DstComponent  "Goto26"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "Demux6"
+          SrcTerminal   2
+          DstComponent  "Goto22"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "Demux6"
+          SrcTerminal   3
+          DstComponent  "Goto23"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "Demux6"
+          SrcTerminal   4
+          DstComponent  "Goto24"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "Demux6"
+          SrcTerminal   5
+          DstComponent  "Goto20"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "Demux6"
+          SrcTerminal   6
+          DstComponent  "Goto21"
+          DstTerminal   1
+        }
+        Connection {
+          Type          Signal
+          SrcComponent  "From File6"
+          SrcTerminal   1
+          DstComponent  "Demux6"
+          DstTerminal   1
+        }
+      }
+    }
+  }
+}

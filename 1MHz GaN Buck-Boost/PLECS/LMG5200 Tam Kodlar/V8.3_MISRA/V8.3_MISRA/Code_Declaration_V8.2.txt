@@ -1,0 +1,1636 @@
+/**
+ * @file        Code_Declaration_V8.2.txt
+ * @brief       MIL-SPEC 1MHz GaN Buck-Boost DC-DC Converter - Global Declarations
+ * @project     LMG5200 Power Stage Controller
+ * @version     8.2 - MISRA-C:2012 Compliant Military-Grade Refactor
+ * @date        January 2025
+ * @author      Alperen
+ * 
+ * @copyright   Military-Grade Firmware - DO-178C Level B Principles
+ * 
+ * @details     This file contains all constant definitions, type declarations,
+ *              and global variable extern declarations for the Buck-Boost converter.
+ *              
+ * @note        MISRA-C:2012 Compliance:
+ *              - Rule 2.3: All types are used
+ *              - Rule 8.4: Compatible declarations
+ *              - Rule 10.1: Appropriate essential type usage
+ *              - Rule 20.7: Macro parameters parenthesized
+ * 
+ * @revision    V7.0  - Initial Intelligent Predictive Control
+ *              V8.0  - Enhanced Load Protection
+ *              V8.1  - Adaptive dV/dt Protection
+ *              V8.2  - MISRA-C:2012 Compliance Refactor
+ */
+
+#ifndef CODE_DECLARATION_H
+#define CODE_DECLARATION_H
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 1: SYSTEM TIMING & MEMORY CONFIGURATION
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ * RATIONALE: Timing constants define the fundamental control loop frequency.
+ *            1MHz switching enables GaN-class efficiency while maintaining controllability.
+ */
+
+/** @brief Sampling period [seconds] - 1MHz control loop */
+#define TS                          (0.000001f)
+
+/** @brief HRTIM period register value for 1MHz @ 170MHz * 32 prescaler */
+#define HRTIM_PERIOD                (27200U)
+
+/* ─────────────────────────────────────────────────────────────────────────────────────────
+ * Memory Configuration (STM32G474RE: 128KB SRAM)
+ * ─────────────────────────────────────────────────────────────────────────────────────────
+ */
+/** @brief Circular buffer depth for history (64µs window) */
+#define HISTORY_DEPTH               (64U)
+
+/** @brief Trend analysis sample count */
+#define TREND_DEPTH                 (16U)
+
+/** @brief MPC prediction steps */
+#define PREDICTION_HORIZON          (8U)
+
+/** @brief Behavior analysis window [µs] */
+#define BEHAVIOR_WINDOW             (256U)
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 2: VOLTAGE/CURRENT SPECIFICATIONS
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ * RATIONALE: Operating range defines military-spec 10-36V input range with 12V regulated output.
+ */
+
+/** @brief Minimum input voltage [V] */
+#define VIN_MIN                     (8.5f)    /* V8.9: 10.0→8.5V giriş diyodu düşümü için */
+
+/** @brief Maximum input voltage [V] */
+#define VIN_MAX                     (36.0f)
+
+/** @brief Nominal input voltage for calculations [V] */
+#define VIN_NOMINAL                 (15.0f)
+
+/** @brief Target output voltage [V] - V8.9: 12.1V (0.1V kompanzasyon) */
+#define VOUT_TARGET                 (12.1f)
+
+/** @brief Maximum output voltage before OVP [V] */
+#define VOUT_MAX                    (14.0f)
+
+/** @brief OVP Trip threshold (debounce) [V] */
+#define OVP_TRIP                    (14.5f)
+
+/** @brief OVP Absolute threshold (instant trip) [V] */
+#define OVP_ABSOLUTE                (15.5f)
+
+/** @brief OVP debounce count */
+#define FAULT_DEBOUNCE_OVP          (5U)    /* 5 cycle @ 1MHz = 5µs */
+
+/** @brief Acceptable output voltage tolerance [V] */
+#define VOUT_TOLERANCE              (0.3f)
+
+/* ─────────────────────────────────────────────────────────────────────────────────────────────
+ * VIN SAFETY LIMITS (V8.15)
+ * RATIONALE: Safety margin for industrial applications
+ * - Nominal operating range: 10V - 36V (design target)
+ * - Safe operating envelope: 9V - 40V (with safety margin)
+ * - Outside 9-40V: System should NOT start (freewheeling mode)
+ * ─────────────────────────────────────────────────────────────────────────────────────────────
+ */
+/** @brief Absolute minimum Vin for safe operation [V] */
+#define VIN_SAFE_MIN                (9.0f)    /* Below this: system disabled */
+
+/** @brief Absolute maximum Vin for safe operation [V] */
+#define VIN_SAFE_MAX                (40.0f)   /* Above this: system disabled */
+
+/** @brief Nominal minimum Vin (design target) [V] */
+#define VIN_NOMINAL_MIN             (10.0f)   /* Normal lower operating limit */
+
+/** @brief Nominal maximum Vin (design target) [V] */
+#define VIN_NOMINAL_MAX             (36.0f)   /* Normal upper operating limit */
+
+/** @brief Vin hysteresis for enable/disable [V] */
+#define VIN_HYSTERESIS              (0.5f)    /* Prevents chattering at boundaries */
+
+/* ─────────────────────────────────────────────────────────────────────────────────────────────
+ * Mode Thresholds (with hysteresis)
+ * RATIONALE: Hysteresis prevents mode oscillation at transition boundaries
+ * V8.12: Buck mode recreated with same logic as Boost mode
+ * ─────────────────────────────────────────────────────────────────────────────────────────────
+ */
+/* V8.12: BUCK MODE RECREATED - Vin > 13V bölgesi, Boost'un aynası */
+#define VIN_BUCK_THRESHOLD          (13.0f)   /* Vin > 13V → pure Buck */
+#define VIN_BUCK_ENTER              (14.0f)   /* Hysteresis: 14V'da Buck'a gir */
+#define VIN_BUCK_EXIT               (13.0f)   /* Hysteresis: 13V'da Boost'a geç */
+
+/* Boost Mode: Vin < 11V bölgesi */
+#define VIN_BOOST_THRESHOLD         (11.0f)
+#define VIN_BOOST_ENTER             (11.0f)
+#define VIN_BOOST_EXIT              (12.0f)
+
+/* ─────────────────────────────────────────────────────────────────────────────────────────
+ * Current Limits
+ * RATIONALE: Based on LMG5200 thermal and electrical limits
+ * ─────────────────────────────────────────────────────────────────────────────────────────
+ */
+/* TITAN-1MHz Reference: Section 2.2 Protection Limits */
+#define IOUT_MAX_STEADY             (6.0f)    /* Nominal 6A continuous */
+#define IOUT_OCP_THRESHOLD          (6.5f)    /* TITAN: Iout limit → duty kısıtla */
+#define IIND_MAX_STEADY             (10.0f)   /* TITAN: IL soft limit (225µs tolerance) */
+#define IIND_PEAK_ABSOLUTE          (35.0f)   /* TITAN: IL hard limit (<50ns hardware) */
+#define IIN_MAX_STEADY              (8.0f)
+#define IIN_OCP_THRESHOLD           (40.0f)   /* TITAN: Iin hard limit (Shoot-Through) */
+#define IIN_CATASTROPHIC            (40.0f)   /* TITAN: Iin hard limit = 40A */
+
+/** @brief DCM prevention threshold [A] - V8.9: Düşürüldü */
+#define IIND_DCM_THRESHOLD          (0.1f)    // V8.9: 0.5 → 0.1
+#define IIND_DCM_WARNING            (0.3f)    // V8.9: 1.0 → 0.3
+#define DCM_PREVENTION_ACTIVE       (0U)      // Devre dışı - normal yükte gereksiz
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 3: LMG5200 HARDWARE SPECIFICATIONS
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ * RATIONALE: LMG5200 is a GaN half-bridge power stage with specific thermal limits.
+ *            I²t protection prevents junction over-temperature.
+ * 
+ * @warning These values are ACTIVELY USED in protection logic - DO NOT MODIFY without review!
+ */
+
+/** @brief Continuous current limit (thermal) [A] - TITAN IL soft */
+#define I_CONTINUOUS_MAX            (10.0f)
+
+/** @brief Absolute peak current - IMMEDIATE CUTOFF [A] - TITAN IL hard */
+#define I_PEAK_ABSOLUTE             (35.0f)
+
+/** @brief Safety peak current - aggressive duty reduction [A] */
+#define I_PEAK_SAFETY               (35.0f)
+
+/** @brief Warning peak current - gradual duty reduction [A] */
+#define I_PEAK_WARNING              (30.0f)
+
+/** @brief Maximum time above 10A [s] */
+#define TIME_OVERCURRENT_LIMIT      (0.000240f)
+
+/** @brief Discharge mode duty (minimal conduction) */
+#define DUTY_DISCHARGE              (0.005f)
+
+/* ─────────────────────────────────────────────────────────────────────────────────────────
+ * Active Current Protection Parameters (V7.10)
+ * ─────────────────────────────────────────────────────────────────────────────────────────
+ */
+/* TITAN-1MHz: Unified Current Protection (Section 2.2) */
+#define I_CONTINUOUS_LIMIT          (10.0f)   /* TITAN: IL soft limit */
+#define I_HARD_BRAKE                (30.0f)   /* Warning threshold */
+#define I_PWM_CUTOFF                (35.0f)   /* TITAN: IL hard limit */
+#define I_PEAK_MAX                  (35.0f)   /* TITAN: IL hard = 35A, NOT 40A */
+
+/** @brief Timing limits */
+#define T_OVERCURRENT_MAX           (0.000480f)  // V8.11: 2x uzatıldı (240→480µs)
+#define T_HARD_BRAKE_MAX            (0.000050f)
+#define T_PWM_CUTOFF_HOLD           (0.000100f)
+
+/** @brief Duty reduction factors per cycle */
+#define DUTY_REDUCE_SOFT            (0.99f)   // V8.11: 2x yumuşak (%2→%1)
+#define DUTY_REDUCE_MEDIUM          (0.975f)  // V8.11: 2x yumuşak (%5→%2.5)
+#define DUTY_REDUCE_HARD            (0.90f)   // V8.11: 2x yumuşak (%20→%10)
+#define DUTY_REDUCE_CUTOFF          (0.0f)
+
+/* ─────────────────────────────────────────────────────────────────────────────────────────
+ * TITAN Section 4.2: Bootstrap Refresh (HIP219x / LMG5200)
+ * RATIONALE: High-side gate driver bootstrap kapasitör şarjı periyodik olarak yenilenmeli.
+ *            1ms'de bir, slave anahtarı 200ns kapatılır → bootstrap şarj edilir.
+ * ─────────────────────────────────────────────────────────────────────────────────────────
+ */
+#define BOOTSTRAP_REFRESH_ENABLE    (1U)        /* TITAN: Aktif */
+#define BOOTSTRAP_REFRESH_PERIOD    (1000U)     /* TITAN: 1ms = 1000 döngü */
+#define BOOTSTRAP_REFRESH_PULSE     (1U)        /* TITAN: 200ns ≈ 1 cycle (min) */
+
+/* ─────────────────────────────────────────────────────────────────────────────────────────
+ * V8.9: Opposite Leg Fast Ramp (Karşı Bacak Hızlı Rampa)
+ * RATIONALE: Mod algılandıktan sonra, tam açık/kapalı olacak karşı bacak için
+ *            normal slew limit yerine daha hızlı rampa kullanılır.
+ *            Örnek: Buck modunda Boost duty → DUTY_MIN hızlıca
+ *                   Boost modunda Buck duty → DUTY_MAX hızlıca
+ * ─────────────────────────────────────────────────────────────────────────────────────────
+ */
+#define OPPOSITE_LEG_FAST_RAMP_ENABLE   (1U)        /* 1=aktif, 0=pasif */
+#define OPPOSITE_LEG_FAST_SLEW          (0.01f)     /* 10x normal slew (0.001 → 0.01) */
+#define OPPOSITE_LEG_INSTANT_MODE       (1U)        /* 1=anında hedef, 0=hızlı rampa */
+#define OPPOSITE_LEG_RAMP_TIME_US       (100U)      /* Hedef rampa süresi [µs] (sadece INSTANT_MODE=0 için) */
+
+/* ─────────────────────────────────────────────────────────────────────────────────────────
+ * Crowbar Protection (Future Use)
+ * ─────────────────────────────────────────────────────────────────────────────────────────
+ */
+#define CROWBAR_ENABLE              (0U)
+#define CROWBAR_TRIGGER_CURRENT     (30.0f)
+#define CROWBAR_RELEASE_CURRENT     (8.0f)
+#define CROWBAR_RESISTANCE          (0.22f)
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 3A: PREDICTION ENGINE PARAMETERS
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ */
+
+#define PRED_BUFFER_SIZE            (100U)
+#define PRED_DERIV_WINDOW           (5U)
+#define PRED_HORIZON_SHORT          (10U)
+#define PRED_HORIZON_MEDIUM         (30U)
+#define PRED_HORIZON_LONG           (50U)
+#define PRED_VIN_HORIZON            (20U)
+
+/** @brief Vin slew rate classifications [V/ms] */
+#define VIN_SLEW_SLOW               (100.0f)
+#define VIN_SLEW_NORMAL             (500.0f)
+#define VIN_SLEW_FAST               (1000.0f)
+#define VIN_SLEW_CRITICAL           (5000.0f)
+
+/** @brief Oscillation analysis */
+#define OSC_ANALYSIS_PERIOD         (100U)
+#define OSC_AMPLITUDE_NONE          (0.02f)
+#define OSC_AMPLITUDE_ACCEPTABLE    (0.10f)
+#define OSC_AMPLITUDE_WARNING       (0.30f)
+
+#define OSC_TYPE_NONE               (0)
+#define OSC_TYPE_DAMPED             (1)
+#define OSC_TYPE_SUSTAINED          (2)
+#define OSC_TYPE_GROWING            (3)
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 3A-2: V8.0 ENHANCED LOAD PROTECTION
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ * RATIONALE: Load protection disconnects load during transients to prevent damage.
+ *            Reconnection requires stable voltage within tight tolerance window.
+ */
+
+/** @brief Load connection voltage window [V] */
+#define VOUT_LOAD_CONNECT_MIN       (12.3f)
+#define VOUT_LOAD_CONNECT_MAX       (12.7f)
+#define VOUT_LOAD_CONNECT_TARGET    (12.5f)
+
+/** @brief Load disconnection thresholds [V] */
+#define VOUT_LOAD_DISCONNECT_LOW    (10.5f)
+#define VOUT_LOAD_DISCONNECT_HIGH   (13.5f)
+
+/** @brief V8.4 Gelişmiş Vin Slew Rate Koruma Sistemi */
+/* Histerezis eşikler - osilasyon önleme */
+#define VIN_SLEW_THRESHOLD_HIGH     (2.0f)   /* Aktivasyon eşiği [V/µs] */
+#define VIN_SLEW_THRESHOLD_LOW      (1.0f)   /* Deaktivasyon eşiği [V/µs] */
+/* Eski sabitler - geriye uyumluluk için */
+#define VIN_RISE_SLEW_THRESHOLD     VIN_SLEW_THRESHOLD_HIGH
+#define VIN_FALL_SLEW_THRESHOLD     VIN_SLEW_THRESHOLD_HIGH
+
+/* Duty Ramping - ani değişim önleme */
+#define DUTY_RAMP_RATE_MAX          (50.0f)  /* Max duty değişim hızı [%/s] = 5%/100µs */
+#define DUTY_RAMP_STEP_MAX          (0.0005f) /* Max tek adımda duty değişimi (0.05%) */
+
+/* Vin Tracking modu */
+#define VIN_TRACKING_ENABLE         (1U)     /* 1=aktif, 0=pasif */
+#define VIN_TRACKING_FILTER_ALPHA   (0.1f)   /* IIR filtre katsayısı (0.1 = yavaş, 0.9 = hızlı) */
+#define VIN_TRACKING_DEADBAND       (0.5f)   /* Vin değişimi < 0.5V ise duty güncelleme */
+
+/** @brief Freewheeling safety flags */
+#define FREEWHEEL_FORCE_LO_ON       (1U)
+#define FREEWHEEL_FORCE_HO_OFF      (1U)
+
+/** @brief Load connection timing [s] */
+#define LOAD_CONNECT_STABLE_TIME    (0.000100f)
+#define LOAD_DISCONNECT_INSTANT     (1U)
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 3A-3: V8.1 ADAPTIVE dV/dt PROTECTION SYSTEM
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ * RATIONALE: Software-based dV/dt protection using DSP filtering.
+ *            Adaptive threshold based on load current and voltage margin.
+ *            Latency budget: <3µs (actual ~0.74µs @ 170MHz)
+ */
+
+/** @brief Fixed-point arithmetic (Q16 format) */
+#define Q16_SHIFT                   (16U)
+#define Q16_ONE                     (65536U)
+#define IIR_ALPHA_Q16               (32768U)
+
+/** @brief DSP filter parameters */
+#define DVDT_MA_WINDOW_SIZE         (4U)
+#define DVDT_FILTER_ENABLED         (1U)
+
+/** @brief Slope calculation parameters */
+#define DVDT_SLOPE_WINDOW           (4U)
+#define DVDT_SLOPE_DIVISOR_SHIFT    (2U)
+
+/** @brief Adaptive threshold LUT dimensions */
+#define DVDT_LUT_ROWS               (4U)
+#define DVDT_LUT_COLS               (4U)
+
+/** @brief Load current breakpoints [mA] */
+#define DVDT_LOAD_BREAK_1           (1000U)
+#define DVDT_LOAD_BREAK_2           (3000U)
+#define DVDT_LOAD_BREAK_3           (5000U)
+
+/** @brief Vout margin breakpoints [mV] */
+#define DVDT_MARGIN_BREAK_1         (500U)
+#define DVDT_MARGIN_BREAK_2         (1000U)
+#define DVDT_MARGIN_BREAK_3         (2000U)
+
+/** @brief Trip-zone configuration */
+#define DVDT_TRIP_DEBOUNCE_COUNT    (2U)
+#define DVDT_RECOVERY_CYCLES        (1000U)
+#define DVDT_BIDIRECTIONAL          (1U)
+
+/** @brief PLECS simulation scale factor */
+#define DVDT_SCALE_FACTOR           (1000.0f)
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 3B: MODEL-BASED PREDICTIVE OBSERVER (MBPO)
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ */
+
+#define MODEL_L_NOMINAL             (10.0e-6f)
+#define MODEL_CIN_NOMINAL           (47.0e-6f)
+#define MODEL_COUT_NOMINAL          (220.0e-6f)
+#define MODEL_RLOAD_NOMINAL         (2.0f)
+
+#define MODEL_PREDICTION_STEP       (10U)
+#define MODEL_VALIDATION_WINDOW     (100U)
+
+#define MODEL_ERROR_NONE            (0.02f)
+#define MODEL_ERROR_SMALL           (0.05f)
+#define MODEL_ERROR_MEDIUM          (0.10f)
+#define MODEL_ERROR_LARGE           (0.20f)
+#define MODEL_ERROR_CRITICAL        (0.50f)
+
+#define ANOMALY_DURATION_THRESHOLD  (0.002f)
+#define ANOMALY_COUNT_THRESHOLD     (5U)
+
+#define MODEL_CALIBRATION_ALPHA     (0.05f)
+#define RLOAD_EST_ALPHA             (0.1f)
+#define RLOAD_EST_MIN_CURRENT       (0.1f)
+
+#define DUTY_CORRECTION_GAIN        (0.001f)
+#define DUTY_CORRECTION_MAX         (0.05f)
+
+/** @brief Anomaly type enumeration */
+#define ANOMALY_TYPE_NONE           (0)
+#define ANOMALY_TYPE_SLOW_RESPONSE  (1)
+#define ANOMALY_TYPE_FAST_RESPONSE  (2)
+#define ANOMALY_TYPE_OVERSHOOT      (3)
+#define ANOMALY_TYPE_UNDERSHOOT     (4)
+#define ANOMALY_TYPE_LOAD_MISMATCH  (5)
+#define ANOMALY_TYPE_COMPONENT_FAULT (6)
+#define ANOMALY_TYPE_SENSOR_ERROR   (7)
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 4: SOFT-START PHASES & TIMING
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ */
+
+#define SS_PHASE_INIT               (0)
+#define SS_PHASE_MEASURE            (1)
+#define SS_PHASE_CHARACTERIZE       (2)
+#define SS_PHASE_PRECHARGE          (3)
+#define SS_PHASE_RAMP_SLOW          (4)
+#define SS_PHASE_RAMP_FAST          (5)
+#define SS_PHASE_RAMP_SETTLE        (6)
+#define SS_PHASE_BLEND              (7)
+#define SS_PHASE_STABILIZE          (8)
+#define SS_PHASE_COMPLETE           (9)
+#define SS_PHASE_FAULT              (10)
+
+/** @brief Phase timings - V8.12 BUCK MODE %20 UZATILDI */
+#define SS_MEASURE_TIME             (0.00012f)    /* V8.12: 100µs → 120µs (+20%) */
+#define SS_OPPOSITE_RAMP_TIME       (0.0012f)     /* V8.12: 1ms → 1.2ms (+20%) */
+#define SS_MAIN_RAMP_TIME           (0.012f)      /* V8.12: 10ms → 12ms (+20%) */
+
+/** @brief Ramp rates per cycle (1MHz = 1µs/cycle) - V8.12 BUCK %20 YAVAŞLATILDI */
+/* Karşı bacak: (0.995 - 0.005) / 1200 cycles = 0.000833 per cycle */
+#define SS_OPPOSITE_RAMP_RATE       (0.000833f)   /* V8.12: MIN→MAX in 1.2ms (%20 yavaş) */
+/* V8.12: Ana bacak %20 yavaşlatıldı (daha güvenli ramp) */
+#define SS_MAIN_RAMP_RATE           (0.0025f)     /* V8.13: 6x hızlandırıldı (orijinal 0.000417 → 0.0025) */
+
+/** @brief Phase timings (eski, geriye uyumluluk için) */
+#define SS_CHARACTERIZE_TIME        (0.0000012f)  /* V8.12: 1µs → 1.2µs (+20%) */
+#define SS_PRECHARGE_TIME           (0.0003f)     /* V8.12: 250µs → 300µs (+20%) */
+#define SS_RAMP_SLOW_TIME           (0.00096f)    /* V8.12: 800µs → 960µs (+20%) */
+#define SS_RAMP_FAST_TIME           (0.00096f)    /* V8.12: 800µs → 960µs (+20%) */
+#define SS_RAMP_SETTLE_TIME         (0.00108f)    /* V8.12: 900µs → 1080µs (+20%) */
+#define SS_BLEND_TIME               (0.00012f)    /* V8.12: 100µs → 120µs (+20%) */
+#define SS_STABILIZE_TIME           (0.00012f)    /* V8.12: 100µs → 120µs (+20%) */
+#define SS_MAX_TIME                 (0.0036f)     /* V8.12: 3ms → 3.6ms (+20%) */
+
+/** @brief Current limits per phase [A] */
+#define SS_IIND_LIMIT_MEASURE       (2.0f)
+#define SS_IIND_LIMIT_CHAR          (3.0f)
+#define SS_IIND_LIMIT_PRECHARGE     (4.0f)
+#define SS_IIND_LIMIT_RAMP_SLOW     (5.0f)
+#define SS_IIND_LIMIT_RAMP_FAST     (7.0f)
+#define SS_IIND_LIMIT_RAMP_SETTLE   (8.0f)
+#define SS_IIND_LIMIT_BLEND         (9.0f)
+#define SS_IIND_LIMIT_STABILIZE     (10.0f)
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 5: PID CONTROLLER PARAMETERS
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ */
+
+/** @brief Base PID (15V nominal) */
+#define KP_BASE                     (0.012f)
+#define KI_BASE                     (150.0f)  // V8.18 FIX: Scaled for 1MHz loop (was 0.15)
+#define KD_BASE                     (0.000003f)  // V8.11: 10x azaltıldı (osilasyon)
+
+/** @brief Buck Mode (Vin > 14V) - V8.12: Boost ile aynı değerler */
+#define KP_BUCK                     (0.008f)   // Boost ile aynı
+#define KI_BUCK                     (90.0f)   // V8.18 FIX: Scaled for 1MHz loop (was 0.09)
+#define KD_BUCK                     (0.000005f) // Boost ile aynı
+
+/** @brief Boost Mode (Vin < 11V) - V8.9: Düşük değerler (osilasyon önleme) */
+#define KP_BOOST                    (0.008f)   // V8.9: 0.015 → 0.008
+#define KI_BOOST                    (90.0f)   // V8.18 FIX: Scaled for 1MHz loop (was 0.09)
+#define KD_BOOST                    (0.000005f) // V8.11: 10x azaltıldı (osilasyon)
+
+/** @brief Buck-Boost Mode (11V < Vin < 13V) - V8.17: Buck ve Boost ortalaması */
+#define KP_BUCKBOOST                (0.010f)   // Buck ve Boost ortalaması
+#define KI_BUCKBOOST                (100.0f)  // V8.18 FIX: Scaled for 1MHz loop (was 0.10)
+#define KD_BUCKBOOST                (0.000005f) // Boost ile aynı
+
+/** @brief High Vin attenuation (24V+) */
+#define HIGH_VIN_THRESHOLD          (20.0f)
+#define HIGH_VIN_KP_FACTOR          (1.0f)   // V8.11: Attenuation kaldırıldı (0.6→1.0)
+#define HIGH_VIN_KI_FACTOR          (1.0f)   // V8.11: Attenuation kaldırıldı (0.8→1.0)
+
+/** @brief Integrator limits */
+#define INTEGRATOR_LIMIT_POS        (0.35f)
+#define INTEGRATOR_LIMIT_NEG        (-0.30f)
+#define INTEGRATOR_DECAY_RATE       (0.9999f)
+
+/** @brief Error clamps */
+#define ERROR_CLAMP_STARTUP         (5.0f)
+#define ERROR_CLAMP_NORMAL          (4.0f)
+#define ERROR_CLAMP_SETTLING        (2.0f)
+#define ERROR_DEADBAND              (0.0f)     // V8.10: DEVRE DIŞI (osilasyon nedeni)
+
+/** @brief Anti-windup threshold */
+#define ANTIWINDUP_THRESHOLD        (5.0f)
+
+/** @brief V8.9: Recovery boost - yükten kopunca PID 7x daha agresif */
+#define RECOVERY_GAIN_MULTIPLIER    (7.0f)
+#define RECOVERY_TIMEOUT_MS         (5.0f)     // 5ms içinde geri bağlanmalı
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 6: PREDICTIVE CONTROLLER
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ */
+
+#define L_INDUCTANCE                (10.0e-6f)
+#define C_OUTPUT                    (220.0e-6f)
+#define R_LOAD_NOMINAL              (2.0f)
+#define R_ESR                       (0.015f)
+
+#define PRED_WEIGHT_VOUT            (1.0f)
+#define PRED_WEIGHT_IIND            (0.5f)
+#define PRED_WEIGHT_DUTY_DELTA      (0.3f)
+
+#define PRED_CONFIDENCE_MIN         (0.3f)
+#define PRED_CONFIDENCE_MAX         (1.0f)
+#define PRED_LEARNING_RATE          (0.001f)
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 7: BEHAVIORAL ANALYSIS
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ */
+
+#define OSC_DETECT_THRESHOLD        (0.30f)   // V8.16: 2x yükseltildi (0.15→0.30)
+#define OSC_SIGN_CHANGE_LIMIT       (8U)      // V8.16: 2x yükseltildi (4→8)
+#define OSC_DETECTION_WINDOW        (0.010f)
+#define OSC_DAMPING_FACTOR          (0.85f)   // V8.16: Yumuşatıldı (0.35→0.85)
+#define OSC_RECOVERY_TIME           (0.050f)  // V8.16: Hızlandırıldı (0.100→0.050)
+
+#define FREQ_BIN_COUNT              (8U)
+#define FREQ_DOMINANT_THRESHOLD     (0.7f)
+
+#define TREND_RISING                (1)
+#define TREND_FALLING               (-1)
+#define TREND_STABLE                (0)
+#define TREND_OSCILLATING           (2)
+#define TREND_THRESHOLD             (0.05f)
+
+#define BEHAVIOR_EXCELLENT          (100)
+#define BEHAVIOR_GOOD               (80)
+#define BEHAVIOR_ACCEPTABLE         (60)
+#define BEHAVIOR_POOR               (40)
+#define BEHAVIOR_CRITICAL           (20)
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 8: SCENARIO ENGINE
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ */
+
+#define SCENARIO_NORMAL             (0)
+#define SCENARIO_HIGH_VIN           (1)
+#define SCENARIO_LOW_VIN            (2)
+#define SCENARIO_HEAVY_LOAD         (3)
+#define SCENARIO_LIGHT_LOAD         (4)
+#define SCENARIO_OSCILLATING        (5)
+#define SCENARIO_TRANSITIONING      (6)
+#define SCENARIO_DCM_RISK           (7)
+
+#define SCENARIO_BLEND_TIME         (0.005f)
+#define SCENARIO_HYSTERESIS         (0.1f)
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 9: SLEW RATE LIMITS
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ */
+
+/* V8.16: Normal slew rate (4x) - Soft-start için dengeli */
+#define SLEW_PRECHARGE              (0.00016f)    /* 4x - Normal */
+#define SLEW_RAMP_SLOW              (0.00032f)    /* 4x - Normal */
+#define SLEW_RAMP_FAST              (0.00096f)    /* 4x - Normal */
+#define SLEW_BLEND                  (0.00064f)    /* 4x - Normal */
+#define SLEW_NORMAL                 (0.0002f)     /* 4x - Normal */
+#define SLEW_DAMPED                 (0.00008f)    /* 4x - Normal */
+#define SLEW_FAULT_RECOVERY         (0.0004f)     /* 4x - Normal */
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 10: FILTER COEFFICIENTS
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ */
+
+#define FILTER_ALPHA_INSTANT        (0.5f)
+#define FILTER_ALPHA_FAST           (0.2f)
+#define FILTER_ALPHA_NORMAL         (0.05f)
+#define FILTER_ALPHA_SLOW           (0.01f)
+#define FILTER_ALPHA_VERY_SLOW      (0.002f)
+#define FILTER_ALPHA_TREND          (0.1f)
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 11: DUTY CYCLE LIMITS
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ */
+
+#define BOOT_GATE_CHARGE            (5.0e-9f)
+#define BOOT_RESISTANCE             (10.0f)
+#define BOOT_VOLTAGE                (5.0f)
+#define BOOT_SAFETY_FACTOR          (1.5f)
+#define BOOT_CHARGE_CONSTANT        (0.075f)
+
+/* V8.4: Bootstrap şarjı için duty limitleri - 1µs periyotta min 20ns off-time */
+#define DUTY_MAX                    (1.0f)    /* V8.9: 0.97→1.0 (sınır kaldırıldı) */
+#define DUTY_MIN_ABSOLUTE           (0.0f)    /* V8.9: 0.03→0.0 */
+#define DUTY_MIN_STARTUP            (0.0f)    /* V8.9: 0.03→0.0 */
+#define DUTY_MIN                    (0.0f)    /* V8.9: 0.03→0.0 (sınır kaldırıldı) */
+#define DUTY_BUCK_MAX               (0.98f)   /* V8.12: Buck mode restored */
+#define DUTY_BOOST_MIN              (0.0f)    /* V8.9: 0.60→0.0 (soft-start için) */
+
+/* V8.9: Bootstrap Capacitor Refresh (1kHz = Her 1ms) */
+#define BOOTSTRAP_REFRESH_ENABLE    (1U)      /* 1=aktif, 0=pasif */
+#define BOOTSTRAP_REFRESH_PERIOD    (1000U)   /* 1000 cycle = 1ms @ 1MHz = 1kHz refresh */
+#define BOOTSTRAP_REFRESH_DUTY      (0.80f)   /* Refresh sırasında duty (kısa OFF süresi için) */
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 12: SYSTEM STATES
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ */
+
+#define STATE_INIT                  (0)
+#define STATE_SOFTSTART             (1)
+#define STATE_RUN_BUCK              (2)   /* V8.12: Buck mode recreated */
+#define STATE_RUN_BOOST             (3)
+#define STATE_RUN_BUCKBOOST         (4)   /* V8.17: Buck-Boost mode recreated */
+#define STATE_FAULT                 (5)
+#define STATE_RECOVERY              (6)
+
+#define MODE_BUCK                   (0)   /* V8.12: Buck mode recreated */
+#define MODE_BOOST                  (1)
+#define MODE_BUCKBOOST              (2)   /* V8.17: Buck-Boost mode */
+
+/* ─────────────────────────────────────────────────────────────────────────────────────────
+ * V8.3: LOAD STATE MACHINE (3-State)
+ * RATIONALE: Yük bağlantı durumuna göre ayrı kontrol stratejileri.
+ *            Rapid cycling sorununu önlemek için hysteresis ve timing kullanılır.
+ * ─────────────────────────────────────────────────────────────────────────────────────────
+ */
+
+/** @brief Load states - Yük Durumları */
+#define LOAD_STATE_YUKSUZ           (0)     /* Başlangıç, Shutdown=LOW, Target=13V */
+#define LOAD_STATE_YUKE_HAZIR       (1)     /* Yüke hazır, Shutdown=HIGH, Target=13V */
+#define LOAD_STATE_YUKE_BAGLI       (2)     /* Yük bağlı, Shutdown=HIGH, Target=12V (ramp) */
+
+/** @brief YUKSUZ → YUKE_HAZIR geçiş koşulları */
+/* V8.12: Ready aralığı güncellendi 12.75V-13.5V */
+#define VOUT_READY_MIN              (12.75f) /* V8.12: Vout_avg minimum [V] */
+#define VOUT_READY_MAX              (13.5f)  /* V8.12: Vout_avg maximum [V] */
+#define VOUT_AVG_SAMPLE_COUNT       (100U)   /* Ortalama için sample sayısı (100µs) */
+
+/** @brief YUKE_HAZIR kalma koşulları */
+#define IOUT_LOAD_DETECT_THRESHOLD  (0.1f)   /* Yük algılama eşiği [A] */
+
+/** @brief YUKE_BAGLI 3-Fazlı Tolerans Sistemi - TITAN Section 3.3 */
+/* Faz 1: Ramp (13V→12V geçişi sırasında) - TITAN: 0-2ms */
+#define LOADED_PHASE1_TIME          (0.002000f)  /* TITAN: 2ms ramp */
+#define LOADED_PHASE1_MIN           (9.0f)       /* V8.9: 6V → 9V minimum */
+#define LOADED_PHASE1_MAX           (13.0f)      /* V8.10: 14V→13V maximum */
+
+/* Faz 2: Geçiş (hedef 12V'ye ulaştıktan sonra stabilizasyon) - TITAN: 2-3.75ms */
+#define LOADED_PHASE2_TIME          (0.003750f)  /* V8.9: 2.5ms → 3.75ms (%50 uzatıldı) */
+#define LOADED_PHASE2_MIN           (10.25f)     /* V8.9: 10V → 10.25V minimum */
+#define LOADED_PHASE2_MAX           (13.5f)      /* V8.9: 13V → 13.5V maximum */
+
+/* Faz 3: Steady-state (normal çalışma) - TITAN: >3.75ms */
+#define LOADED_PHASE3_MIN           (11.0f)      /* V8.9: 11.5V → 11V minimum */
+#define LOADED_PHASE3_MAX           (13.25f)     /* V8.9: 12.5V → 13.25V maximum */
+
+/* Sınır aşım debounce - 4x */
+#define VOUT_DEBOUNCE_TIME          (0.000400f)  /* 400µs sınır dışında → state değişimi */
+
+/* V8.10: Vout 13V'den 2ms'de 12.1V'ye iner */
+#define PID_TARGET_LOADED           (12.1f)  /* Yüklü hedef [V] - V8.9: 0.1V kompanzasyon */
+#define PID_TARGET_UNLOADED         (13.0f)  /* V8.10: Yüksüz hedef [V] - 14V→13V */
+#define PID_RAMP_TIME               (0.002000f) /* TITAN: 2ms ramp süresi */
+#define PID_RAMP_RATE               (500.0f)   /* V8.10: (13-12)/2ms = 500 V/s */
+
+/** @brief YUKE_BAGLI Hızlı Toparlanma */
+#define AGGRESSIVE_PID_TIME         (0.002000f) /* V8.10: 1ms→2ms agresif PID [s] */
+#define AGGRESSIVE_PID_MULTIPLIER   (7.0f)      /* V8.10: 5x→7x (13V için güçlendirildi) */
+#define DUTY_BOOST_TIME             (0.000500f) /* İlk 500µs duty boost [s] */
+#define DUTY_BOOST_AMOUNT           (0.05f)     /* Duty +5% boost (0.05 = %5) */
+
+/** @brief Prediktif Duty Ön-Hesaplama */
+#define DUTY_PRELOAD_MARGIN         (1.15f)     /* Feedforward güvenlik marjı (+15%) */
+#define DUTY_PRELOAD_ENABLE         (1U)        /* 1=aktif, 0=pasif */
+
+/** @brief Agresif D-Term - V8.10: Düşük değer (osilasyon önleme) */
+#define KD_AGGRESSIVE_MULTIPLIER    (0.5f)      /* V8.11: 10x azaltıldı (osilasyon) */
+
+/** @brief Hata Tabanlı P-Boost (V8.10: Eşikler yarıya indirildi) */
+#define KP_ERROR_BOOST_THRESHOLD_1  (0.5f)      /* V8.10: 1V→0.5V - Error > 0.5V → 2x P */
+#define KP_ERROR_BOOST_THRESHOLD_2  (1.0f)      /* V8.10: 2V→1V - Error > 1V → 3x P */
+#define KP_BOOST_LEVEL_1            (2.0f)      /* Error > 0.5V → 2x P */
+#define KP_BOOST_LEVEL_2            (3.0f)      /* Error > 1V → 3x P */
+
+
+
+/** @brief V8.3 Freewheel timing */
+#define FREEWHEEL_IIND_THRESHOLD_V83    (10.0f)   /* Aktivasyon eşiği [A] */
+#define FREEWHEEL_ACTIVATION_TIME       (0.000225f) /* 225µs süre [s] */
+
+/** @brief Vout/Vin Stabilite Ölçüm Parametreleri */
+#define VIN_STABILITY_AVG_COUNT         (100U)    /* Ortalama sample sayısı (100µs) */
+#define VIN_STABILITY_HISTORY_COUNT     (5U)      /* Son 5 ortalama (500µs pencere) */
+#define VIN_AVG_CHANGE_MAX              (1.0f)    /* Ortalama değişimi max [V] */
+#define VIN_PP_MAX_ABSOLUTE             (2.0f)    /* Peak-to-peak max [V] */
+#define VIN_ABSOLUTE_MIN                (10.0f)   /* Vin minimum kabul [V] */
+#define VIN_ABSOLUTE_MAX                (36.0f)   /* Vin maximum kabul [V] */
+#define VOUT_PP_MAX_PERCENT             (0.05f)   /* Vout peak-to-peak max %5 */
+#define PP_MEASUREMENT_PERIOD           (100U)    /* P-P ölçüm periyodu [sample] (100µs) */
+
+/** @brief V8.10 Dual-mode discharge thresholds (13V hedef için ayarlandı) */
+#define DISCHARGE_LOADED_ACTIVATE       (13.0f)   /* Yüklü aktivasyon [V] */
+#define DISCHARGE_LOADED_DEACTIVATE     (12.25f)  /* Yüklü deaktivasyon [V] */
+#define DISCHARGE_UNLOADED_ACTIVATE     (13.5f)   /* V8.10: 14.5→13.5V */
+#define DISCHARGE_UNLOADED_DEACTIVATE   (13.0f)   /* V8.10: 14.0→13.0V */
+#define DISCHARGE_MIN_ON_TIME           (0.000050f) /* Minimum aktif süre [s] (50µs) */
+
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 13: FAULT CODES
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ */
+
+#define FAULT_NONE                  (0)
+#define FAULT_OVP                   (1)
+#define FAULT_OCP                   (2)
+#define FAULT_UVLO                  (3)
+#define FAULT_THERMAL               (4)
+#define FAULT_SHORT                 (5)
+#define FAULT_IIN_OCP               (6)
+#define FAULT_SHOOTTHROUGH          (7)
+#define FAULT_PEAK_I2T              (8)
+#define FAULT_CONTROL               (9)
+#define FAULT_DCM                   (10)
+
+// FAULT_DEBOUNCE_OVP moved to SECTION 2 (line 87)
+#define FAULT_DEBOUNCE_OCP          (10U)
+#define FAULT_DEBOUNCE_UVLO         (100U)
+#define FAULT_DEBOUNCE_IIN          (20U)
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 14: PROTECTION THRESHOLDS
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ */
+
+#define OVP_WARNING                 (13.0f)
+#define OVP_TRIP                    (14.5f)
+#define OVP_ABSOLUTE                (15.5f)
+
+#define IIND_PEAK_LIMIT             (35.0f)   /* TITAN: IL hard = 35A */
+#define IIND_PEAK_TIME_LIMIT        (0.000225f) /* TITAN: 225µs */
+
+#define SHOOTTHROUGH_IIN_THRESHOLD  (15.0f)
+#define SHOOTTHROUGH_VOUT_LOW       (2.0f)
+#define SHOOTTHROUGH_PROOF_TIME     (0.0001f)
+
+#define I2T_ENERGY_MAX_BURST        (0.080f)
+#define I2T_ENERGY_MAX_SUSTAINED    (0.040f)
+#define I2T_ENERGY_WARNING          (0.025f)
+#define I2T_CURRENT_NOMINAL         (8.0f)
+#define I2T_CURRENT_WARNING         (15.0f)
+#define I2T_CURRENT_CRITICAL        (30.0f)
+#define I2T_DECAY_RATE              (0.00015f)
+#define I2T_DECAY_FAST              (0.0006f)
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 14A: PREDICTION ENGINE INTERVENTION PARAMETERS
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ * RATIONALE: These constants control when the prediction engine intervenes
+ *            vs. allowing natural system recovery.
+ */
+
+/** @brief Safety margin for natural return (90% of remaining time) */
+#define NATURAL_RETURN_SAFE_MARGIN  (0.9f)
+
+/** @brief Intervention thresholds */
+#define INTERVENTION_MARGIN         (0.5f)
+#define INTERVENTION_URGENT         (0.2f)
+
+/** @brief PID adaptation gains for oscillation damping */
+#define PID_ADAPT_OSC_KP            (0.008f)
+#define PID_ADAPT_OSC_KI            (0.05f)
+#define PID_ADAPT_OSC_KD            (0.000005f)  // V8.11: 10x azaltıldı
+
+/** @brief PID adaptation gains for stable operation */
+#define PID_ADAPT_STABLE_KP         (0.015f)
+#define PID_ADAPT_STABLE_KI         (0.12f)
+#define PID_ADAPT_STABLE_KD         (0.000003f)  // V8.11: 10x azaltıldı
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 14B: THERMAL LIMITER DUTY CONTROL
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ * RATIONALE: Rate-based duty adjustment for thermal protection with smooth recovery.
+ */
+
+/** @brief Duty reduction rates per control cycle */
+#define DUTY_REDUCTION_RATE_NORMAL  (0.0001f)   // V8.16: %50 azaltıldı
+#define DUTY_REDUCTION_RATE_FAST    (0.0005f)   // V8.16: %50 azaltıldı
+
+/** @brief Duty recovery rate after thermal event */
+#define DUTY_RECOVERY_RATE          (0.0001f)
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 14C: SOFT-START RAMP RATIOS
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ * RATIONALE: Multi-slope ramp for soft-start minimizes inrush current.
+ *            Slow start, fast middle, slow settle pattern.
+ */
+
+/** @brief Ramp rate multipliers for soft-start phases */
+/* V8.13: 6x hızlandırma - maksimum agresif ramp */
+#define RAMP_SLOW_RATIO             (1.8f)   /* V8.13: 0.3 → 1.8 (6x) */
+#define RAMP_FAST_RATIO             (7.5f)   /* V8.13: 1.5 → 7.5 (5x) */
+#define RAMP_SETTLE_RATIO           (3.0f)   /* V8.13: 0.5 → 3.0 (6x) */
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 15: HELPER FUNCTIONS (MISRA-C:2012 Compliant)
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ * RATIONALE: Inline functions replace macros to avoid side-effect risks (Rule 20.7)
+ */
+
+/**
+ * @brief Clamps a float value between minimum and maximum bounds
+ * @param x Input value
+ * @param lo Lower bound
+ * @param hi Upper bound
+ * @return Clamped value
+ */
+static inline float Clamp_Float(float x, float lo, float hi)
+{
+    float result;
+    if (x < lo)
+    {
+        result = lo;
+    }
+    else if (x > hi)
+    {
+        result = hi;
+    }
+    else
+    {
+        result = x;
+    }
+    return result;
+}
+
+/**
+ * @brief Returns the minimum of two float values
+ */
+static inline float Min_Float(float a, float b)
+{
+    return (a < b) ? a : b;
+}
+
+/**
+ * @brief Returns the maximum of two float values
+ */
+static inline float Max_Float(float a, float b)
+{
+    return (a > b) ? a : b;
+}
+
+/**
+ * @brief Returns the absolute value of a float
+ */
+static inline float Abs_Float(float x)
+{
+    return (x < 0.0f) ? (-x) : x;
+}
+
+/**
+ * @brief Returns the sign of a float (-1, 0, or 1)
+ */
+static inline int Sign_Float(float x)
+{
+    int result;
+    if (x > 0.0f)
+    {
+        result = 1;
+    }
+    else if (x < 0.0f)
+    {
+        result = -1;
+    }
+    else
+    {
+        result = 0;
+    }
+    return result;
+}
+
+/**
+ * @brief Linear interpolation between two values
+ */
+static inline float Lerp_Float(float a, float b, float t)
+{
+    return a + (t * (b - a));
+}
+
+/* Legacy macro compatibility (for existing code) */
+#define CLAMP(x, lo, hi)    Clamp_Float((x), (lo), (hi))
+#define MIN(a, b)           Min_Float((a), (b))
+#define MAX(a, b)           Max_Float((a), (b))
+#define ABS(x)              Abs_Float(x)
+#define SIGN(x)             Sign_Float(x)
+#define LERP(a, b, t)       Lerp_Float((a), (b), (t))
+
+/* Freewheeling parameters */
+#define FREEWHEEL_SLEW_THRESHOLD    (3.0f)
+#define FREEWHEEL_STABLE_TIME       (0.000025f)
+#define FREEWHEEL_MAX_TIME          (0.001f)
+#define FREEWHEEL_CURRENT_LIMIT     (15.0f)
+
+/* Shutdown parameters - V8.2 Enhanced Recovery */
+#define SHUTDOWN_ENABLE             (1U)
+#define VOUT_WINDOW_LOW             (11.8f)         /* Tightened for better recovery */
+#define VOUT_WINDOW_HIGH            (12.2f)         /* Tightened for better recovery */
+#define VOUT_HYST_LOW               (11.0f)
+#define VOUT_HYST_HIGH              (11.8f)
+#define VOUT_UNDERVOLT_THRESHOLD    (11.0f)
+#define UNDERVOLT_TIMEOUT           (0.050f)
+#define SHUTDOWN_RECOVERY_THRESHOLD (12.0f)         /* Explicit recovery target */
+#define SHUTDOWN_RECOVERY_TIME      (0.000100f)     /* 100µs stable before reconnect */
+#define SHUTDOWN_STABLE_TIME        (0.000025f)
+#define SHUTDOWN_LATCH_TIME         (0.000050f)
+
+/* ─────────────────────────────────────────────────────────────────────────────────────────
+ * V8.2: Discharge Circuit (Overvoltage Deadlock Prevention)
+ * RATIONALE: 5Ω resistor to ground via MOSFET drains excess Vout when load is disconnected.
+ *            Prevents deadlock: Vout > 13.5V → Load can't reconnect → Vout stays high.
+ *            CRITICAL: Discharge and Load NEVER active simultaneously!
+ * ─────────────────────────────────────────────────────────────────────────────────────────
+ */
+
+/** @brief Discharge circuit enable flag */
+#define DISCHARGE_ENABLE            (1U)
+
+/** @brief Discharge resistor value [Ω] - limits current draw */
+#define DISCHARGE_RESISTANCE        (5.0f)
+
+/** @brief Vout threshold to activate discharge [V] */
+#define DISCHARGE_ACTIVATE_THRESHOLD (13.5f)
+
+/** @brief Vout threshold to deactivate discharge [V] */
+#define DISCHARGE_DEACTIVATE_THRESHOLD (12.5f)
+
+/** @brief Minimum time discharge must remain active [s] */
+#define DISCHARGE_MIN_TIME          (0.000100f)
+
+/** @brief Safety: Discharge current limit (calculated from Vout/R) [A] */
+#define DISCHARGE_MAX_CURRENT       (8.0f)
+
+/* ─────────────────────────────────────────────────────────────────────────────────────────
+ * V8.2: Freewheel/Brake Circuit (Inductor Energy Dissipation)
+ * RATIONALE: 5Ω resistor to ground via MOSFET actively dissipates inductor stored energy
+ *            during overvoltage/load dump events. Complements existing freewheeling mode.
+ * CRITICAL: Freewheel brake only activates when ALL PWMs are OFF (safety interlock)
+ * ─────────────────────────────────────────────────────────────────────────────────────────
+ */
+
+/** @brief Freewheel circuit enable flag */
+#define FREEWHEEL_BRAKE_ENABLE      (1U)
+
+/** @brief TITAN Voltage Trap: R_FREEWHEEL = 0.25Ω
+ *  KRITIK: 35A × 0.25Ω = 8.75V < 12V → Akım çıkışa kaçamaz!
+ *  Eski 5Ω YANLIŞ: 35A × 5Ω = 175V → Kapasitör patlar! */
+#define FREEWHEEL_BRAKE_RESISTANCE  (0.25f)
+
+/** @brief Maximum safe inductor current for brake activation [A] */
+#define FREEWHEEL_BRAKE_MAX_CURRENT (25.0f)
+
+/** @brief Minimum time brake must remain active [s] */
+#define FREEWHEEL_BRAKE_MIN_TIME    (0.000050f)
+
+/** @brief Brake activates when inductor current exceeds [A] */
+#define FREEWHEEL_BRAKE_IIND_THRESHOLD (15.0f)
+
+/* Feedforward margins */
+#define FF_SAFETY_MARGIN_RISING     (0.75f)
+#define FF_SAFETY_MARGIN_FALLING    (1.05f)
+#define FF_VOUT_CORRECTION_GAIN     (0.03f)
+
+/* Slope buffer */
+#define SLOPE_BUFFER_SIZE           (50U)
+#define SLOPE_PREDICTION_HORIZON    (0.000170f)
+#define SLOPE_FILTER_ALPHA          (0.1f)
+
+/* Vin step detection */
+#define VIN_STEP_DETECT_THRESHOLD   (1.0f)
+#define VIN_STEP_LARGE_THRESHOLD    (5.0f)
+#define VIN_STEP_PROTECTION_TIME    (0.002f)
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 16-31: TYPE DEFINITIONS (Structures)
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ */
+
+/**
+ * @brief History buffer for circular sample storage
+ */
+typedef struct
+{
+    float vin[HISTORY_DEPTH];
+    float vout[HISTORY_DEPTH];
+    float iin[HISTORY_DEPTH];
+    float iind[HISTORY_DEPTH];
+    float iout[HISTORY_DEPTH];
+    
+    int head;
+    int count;
+    
+    float vin_mean;
+    float vin_min;
+    float vin_max;
+    float vout_mean;
+    float vout_min;
+    float vout_max;
+    float iind_mean;
+    float iind_min;
+    float iind_max;
+    
+    float vout_delta_sum;
+    float iind_delta_sum;
+    
+} HistoryBuffer_t;
+
+/**
+ * @brief Behavioral analysis engine
+ */
+typedef struct
+{
+    int vout_trend;
+    int iind_trend;
+    float vout_trend_rate;
+    float iind_trend_rate;
+    
+    float vout_derivative;
+    float vout_derivative_filtered;
+    int sign_changes;
+    int prev_sign;
+    float osc_timer;
+    int oscillation_detected;
+    float oscillation_frequency;
+    float oscillation_amplitude;
+    
+    float freq_bins[FREQ_BIN_COUNT];
+    int dominant_bin;
+    float dominant_magnitude;
+    
+    int behavior_score;
+    int score_history[8];
+    int score_index;
+    float score_average;
+    
+    float damping_factor;
+    float recovery_timer;
+    
+    float settling_time;
+    float overshoot_percent;
+    float steady_state_error;
+    
+} BehaviorAnalysis_t;
+
+/**
+ * @brief Predictive controller structure
+ */
+typedef struct
+{
+    float model_L;
+    float model_C;
+    float model_R;
+    float model_confidence;
+    
+    float pred_vout[PREDICTION_HORIZON];
+    float pred_iind[PREDICTION_HORIZON];
+    float pred_duty[PREDICTION_HORIZON];
+    
+    float optimal_duty;
+    float optimal_trajectory[PREDICTION_HORIZON];
+    
+    float cost_current;
+    float cost_predicted;
+    float cost_improvement;
+    
+    float pred_error_sum;
+    float pred_error_count;
+    float pred_accuracy;
+    
+    float dcm_risk;
+    float dcm_margin;
+    
+} PredictiveController_t;
+
+/**
+ * @brief Scenario engine for adaptive control
+ */
+typedef struct
+{
+    int current_scenario;
+    int previous_scenario;
+    float scenario_blend;
+    float blend_timer;
+    
+    float active_kp;
+    float active_ki;
+    float active_kd;
+    float active_slew;
+    float active_iind_limit;
+    
+    int high_vin_detected;
+    int low_vin_detected;
+    int heavy_load_detected;
+    int light_load_detected;
+    int osc_detected;
+    int dcm_risk_detected;
+    
+    float strategy_confidence;
+    float strategy_timer;
+    int strategy_changes;
+    
+} ScenarioEngine_t;
+
+/**
+ * @brief Soft-start controller
+ */
+typedef struct
+{
+    int phase;
+    float phase_timer;
+    float total_timer;
+    
+    float vin_samples[64];
+    int vin_sample_count;
+    float vin_measured;
+    float vin_variance;
+    float vin_stability;
+    
+    float system_response;
+    float system_time_constant;
+    float system_damping;
+    float load_estimate;
+    
+    int operating_mode;
+    
+    /* V8.12: Buck mode recreated - duty fields restored */
+    float duty_buck_start;
+    float duty_buck_target;
+    float duty_buck_current;
+    
+    float duty_boost_start;
+    float duty_boost_target;
+    float duty_boost_current;
+    
+    float ramp_rate_slow;
+    float ramp_rate_fast;
+    float ramp_rate_settle;
+    float ramp_rate_current;
+    
+    float pid_blend_factor;
+    float sigmoid_progress;
+    
+    float integrator_seed;
+    float integrator_blend;
+    
+    float vout_at_start;
+    float vout_at_precharge;
+    float vout_at_ramp_end;
+    float vout_peak;
+    float vout_settle;
+    
+    float iind_limit_active;
+    float iind_peak_during_ss;
+    
+    int complete;
+    int success;
+    float final_error;
+    
+} SoftStartController_t;
+
+/**
+ * @brief V8.1 Adaptive dV/dt Protection Structure
+ */
+typedef struct
+{
+    /* Stage 1: Digital Filter State */
+    float ma_buffer[DVDT_MA_WINDOW_SIZE];
+    int ma_index;
+    float ma_sum;
+    float iir_state;
+    float vin_filtered;
+    
+    /* Stage 2: Slope Calculator */
+    float slope_history[DVDT_SLOPE_WINDOW];
+    int slope_index;
+    float dvdt;
+    float dvdt_abs;
+    
+    /* Stage 3: Adaptive Threshold */
+    float threshold_current;
+    int load_index;
+    int margin_index;
+    
+    /* Stage 4: Trip Latch */
+    int tripped;
+    int latch_count;
+    int recovery_countdown;
+    float slope_at_trip;
+    float threshold_at_trip;
+    
+    /* Diagnostics */
+    int protection_active;
+    int total_trip_count;
+    
+} AdaptiveDVdtProtection_t;
+
+/**
+ * @brief Adaptive Threshold LUT (V/µs)
+ * Row: Load index (0-1A, 1-3A, 3-5A, >5A)
+ * Col: Margin index (0-0.5V, 0.5-1V, 1-2V, >2V)
+ */
+static const float DVdt_Threshold_LUT[DVDT_LUT_ROWS][DVDT_LUT_COLS] =
+{
+    /*         0-0.5V   0.5-1V   1-2V    >2V    */
+    /* 0-1A */ { 3.0f,   2.5f,   2.0f,   1.5f },
+    /* 1-3A */ { 2.5f,   2.0f,   1.5f,   1.0f },
+    /* 3-5A */ { 2.0f,   1.5f,   1.0f,   0.8f },
+    /* >5A  */ { 1.5f,   1.0f,   0.8f,   0.5f }
+};
+
+/**
+ * @brief DCM Prevention System
+ */
+typedef struct
+{
+    float iind_minimum;
+    float iind_minimum_filtered;
+    
+    int dcm_detected;
+    int dcm_imminent;
+    float dcm_margin;
+    
+    float duty_boost_request;
+    int prevention_active;
+    int prevention_cycles;
+    
+    int dcm_events;
+    float dcm_total_time;
+    
+} DCMPrevention_t;
+
+/**
+ * @brief Thermal Predictive Limiter (LMG5200 based)
+ */
+typedef struct
+{
+    float overcurrent_timer;
+    int timer_active;
+    int thermal_clamp_active;
+    float time_in_clamp;
+    
+    int peak_warning;
+    int peak_absolute;
+    float peak_value;
+    
+    float current_buffer[SLOPE_BUFFER_SIZE];
+    int buffer_index;
+    int buffer_filled;
+    float di_dt_raw;
+    float di_dt_filtered;
+    float projected_time_to_safe;
+    int prediction_valid;
+    int hold_reduction;
+    
+    float duty_reduction_request;
+    float duty_target;
+    int modulation_active;
+    
+    int soft_recovery_active;
+    float recovery_duty;
+    float recovery_timer;
+    
+    int overcurrent_events;
+    int peak_events;
+    float total_overcurrent_time;
+    
+    // V8.14: Slew damping for 4-phase protection
+    float slew_damping;  // 1.0 = normal, 0.0 = frozen
+    
+} ThermalPredictiveLimiter_t;
+
+/**
+ * @brief Advanced Prediction Engine
+ */
+typedef struct
+{
+    float i_buffer[PRED_BUFFER_SIZE];
+    float vin_buffer[PRED_BUFFER_SIZE];
+    float vout_buffer[PRED_BUFFER_SIZE];
+    int buffer_index;
+    int buffer_filled;
+    
+    float di_dt;
+    float dvin_dt;
+    float dvout_dt;
+    float d2i_dt2;
+    float d2vin_dt2;
+    float di_dt_filtered;
+    float dvin_dt_filtered;
+    float dvout_dt_filtered;
+    
+    float i_predicted_10us;
+    float i_predicted_30us;
+    float i_predicted_50us;
+    float vin_predicted_20us;
+    float vout_predicted_10us;
+    
+    float time_to_safe_zone;
+    float time_to_peak;
+    float projected_peak_value;
+    float total_overcurrent_time_est;
+    
+    int natural_return_ok;
+    int intervention_needed;
+    float intervention_strength;
+    int intervention_type;
+    
+    int vin_slew_class;
+    int vin_step_detected;
+    float vin_step_magnitude;
+    int feedforward_boost_active;
+    
+    float vout_amplitude;
+    float vout_frequency_est;
+    float vout_dc_offset;
+    int oscillation_type;
+    int zero_crossings;
+    
+    float recommended_kp;
+    float recommended_ki;
+    float recommended_kd;
+    int pid_update_pending;
+    float pid_adaptation_timer;
+    
+    int predictions_made;
+    int correct_predictions;
+    float prediction_accuracy;
+    int interventions_avoided;
+    
+} PredictionEngine_t;
+
+/**
+ * @brief Model-Based Predictive Observer
+ */
+typedef struct
+{
+    float rload_instant;
+    float rload_estimated;
+    float rload_confidence;
+    int rload_valid;
+    float rload_variance;
+    float rload_last_update;
+    
+    float di_dt_model;
+    float dvout_dt_model;
+    float iL_predicted;
+    float vout_predicted;
+    float duty_ideal;
+    float iL_prediction_old;
+    float vout_prediction_old;
+    float prediction_timestamp;
+    
+    float vout_error;
+    float vout_error_percent;
+    float iL_error;
+    float iL_error_percent;
+    float error_integral;
+    int validation_window_active;
+    int validations_done;
+    int validations_passed;
+    float validation_success_rate;
+    
+    int anomaly_type;
+    float anomaly_duration;
+    int anomaly_count;
+    int anomaly_confirmed;
+    float anomaly_severity;
+    int slow_response_detected;
+    int fast_response_detected;
+    int overshoot_predicted;
+    int component_fault_suspected;
+    int sensor_error_suspected;
+    
+    float L_correction;
+    float Cout_correction;
+    float L_effective;
+    float Cout_effective;
+    int calibration_active;
+    int calibration_complete;
+    
+    float duty_correction;
+    float duty_correction_integral;
+    int correction_active;
+    int correction_direction;
+    
+    float tau_LC;
+    float tau_RC;
+    float f_resonance;
+    float settling_time_est;
+    
+    int predictions_total;
+    int predictions_accurate;
+    float model_accuracy;
+    int anomalies_detected;
+    int corrections_applied;
+    int faults_prevented;
+    
+} ModelObserver_t;
+
+/**
+ * @brief Impedance Observer
+ */
+typedef struct
+{
+    float r_load_instant;
+    float r_load_filtered;
+    float r_load_variance;
+    float r_history[8];
+    int history_index;
+    
+    int load_class;
+    int is_valid;
+    float confidence;
+    float confidence_timer;
+    
+    float r_source_estimated;
+    float vin_no_load;
+    
+} ImpedanceObserver_t;
+
+/**
+ * @brief Thermal Integrator (I²t)
+ */
+typedef struct
+{
+    float energy_accumulated;
+    float energy_peak;
+    float temperature_estimated;
+    float thermal_margin;
+    
+    int warning_active;
+    int critical_active;
+    int trip_proven;
+    
+    float time_above_warning;
+    float time_above_critical;
+    
+    int cooling_trend;
+    float recovery_rate;
+    
+} ThermalIntegrator_t;
+
+/**
+ * @brief Input OCP & Shoot-Through Detection
+ */
+typedef struct
+{
+    int warning_active;
+    int ocp_suspected;
+    int ocp_proven;
+    
+    int shootthrough_suspected;
+    int shootthrough_proven;
+    
+    float ocp_evidence_timer;
+    float shootthrough_evidence_timer;
+    int debounce_counter;
+    
+    float iin_peak;
+    float iin_at_fault;
+    
+} InputOCP_t;
+
+/**
+ * @brief Peak Current Tracker
+ */
+typedef struct
+{
+    int peak_active;
+    float peak_timer;
+    int peak_fault;
+    int instant_fault;
+    
+} PeakCurrentTracker_t;
+
+/**
+ * @brief Dynamic UVLO
+ */
+typedef struct
+{
+    float uvlo_threshold_active;
+    float uvlo_startup_active;
+    
+    int heavy_load_mode;
+    float vin_sag_allowed;
+    float vin_expected;
+    float vin_sag_measured;
+    
+    int source_sag_detected;
+    int hardware_failure;
+    int trip_proven;
+    int debounce_counter;
+    
+} DynamicUVLO_t;
+
+/**
+ * @brief Power & Efficiency Tracking
+ */
+typedef struct
+{
+    float pin_instant;
+    float pin_filtered;
+    float pout_instant;
+    float pout_filtered;
+    
+    float efficiency_instant;
+    float efficiency_filtered;
+    float efficiency_percent;
+    
+    float energy_in_total;
+    float energy_out_total;
+    float energy_loss_total;
+    
+} PowerEfficiency_t;
+
+/**
+ * @brief Fault Manager
+ */
+typedef struct
+{
+    int fault_active;
+    int fault_type;
+    float fault_value;
+    float recovery_timer;
+    int fault_count;
+    int fault_latched;
+    
+    int ovp_trip;
+    int ocp_trip;
+    int uvlo_trip;
+    int thermal_trip;
+    int short_trip;
+    int iin_ocp_trip;
+    int shootthrough_trip;
+    int dcm_trip;
+    
+} FaultManager_t;
+
+/**
+ * @brief Diagnostic Counters
+ */
+typedef struct
+{
+    int ovp_events;
+    int ocp_events;
+    int uvlo_events;
+    int thermal_events;
+    int short_events;
+    int iin_ocp_events;
+    int shootthrough_events;
+    int oscillation_events;
+    int dcm_events;
+    int current_limit_events;
+    int scenario_changes;
+    int softstart_completions;
+    int softstart_faults;
+    float total_energy_dissipated;
+    
+} DiagCounters_t;
+
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * SECTION 31: GLOBAL VARIABLES
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ */
+
+/* System State */
+int sys_state;
+int prev_state;
+float state_timer;
+
+/* Raw & Filtered Measurements */
+float raw_vin, raw_vout, raw_iin, raw_iind, raw_iout;
+float filt_vin, filt_vout, filt_iin, filt_iind, filt_iout;
+
+/* Output Duties */
+float timer_a_duty;
+float timer_b_duty;
+float prev_timer_a;
+float prev_timer_b;
+
+/* PID Variables */
+float kp, ki, kd;
+float error, prev_error, prev_prev_error;
+float error_derivative, error_integral;
+float integrator;
+float slew_limit;
+
+/* Feedforward */
+float feedforward_buck;   /* V8.12: Buck mode restored */
+float feedforward_boost;
+
+/* Power Tracking */
+float pin_power;
+float pout_power;
+float efficiency;
+
+/* Structure Instances */
+HistoryBuffer_t             history;
+BehaviorAnalysis_t          behavior;
+PredictiveController_t      predictor;
+ScenarioEngine_t            scenario;
+SoftStartController_t       ss;
+DCMPrevention_t             dcm_prev;
+ThermalPredictiveLimiter_t  thermal_limiter;
+PredictionEngine_t          pred;
+ModelObserver_t             model_obs;
+ImpedanceObserver_t         impedance_obs;
+ThermalIntegrator_t         thermal_int;
+InputOCP_t                  input_ocp;
+PeakCurrentTracker_t        peak_tracker;
+DynamicUVLO_t               dynamic_uvlo;
+PowerEfficiency_t           power_eff;
+FaultManager_t              fault;
+DiagCounters_t              diag;
+
+
+#endif /* CODE_DECLARATION_H */
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════
+ * END OF V8.2 CODE DECLARATION - MISRA-C:2012 Compliant
+ * ═══════════════════════════════════════════════════════════════════════════════════════
+ */

@@ -1,0 +1,550 @@
+================================================================================
+    MIL-SPEC 1MHz GaN Buck-Boost DC-DC Converter - ÇIKIŞ SİNYALLERİ KILAVUZU
+                          V8.3 MISRA-C Compliant
+================================================================================
+
+Bu belge, PLECS simülasyonundaki C-Script bloğunun çıkış sinyallerini açıklar.
+İlk 2 çıkış (Output 0 ve 1 - PWM sinyalleri) bu belgede YER ALMAZ.
+
+================================================================================
+                        ÇIKIŞ SİNYALLERİ LİSTESİ
+================================================================================
+
+
+
+
+
+
+
+────────────────────────────────────────────────────────────────────────────────
+Output 2: SHUTDOWN / YÜK AYIRMA SİNYALİ
+────────────────────────────────────────────────────────────────────────────────
+Sinyal Türü   : Dijital (0 veya 1)
+Birim         : - (mantıksal)
+Grafik Adı    : "Load Switch" veya "Shutdown"
+
+DEĞER ANLAMLARI:
+  • 0.0 = Yük AYRIK (MOSFET OFF)
+         → Çıkış kapasitörü yükten izole
+         → Koruma aktif veya startup aşamasında
+         
+  • 1.0 = Yük BAĞLI (MOSFET ON)
+         → Normal çalışma
+         → Vout stabil ve güvenli aralıkta
+
+KULLANIM:
+  Bu sinyal, çıkış ile yük arasındaki koruma MOSFET'ini kontrol eder.
+  Sistem startup'ta, aşırı voltaj durumunda veya Vin slew korumasında
+  yükü ayırarak hem yükü hem de sistemi korur.
+
+
+
+
+
+
+
+
+────────────────────────────────────────────────────────────────────────────────
+Output 3: DISCHARGE (DEŞARJ) DEVRESİ
+────────────────────────────────────────────────────────────────────────────────
+Sinyal Türü   : Dijital (0 veya 1)
+Birim         : - (mantıksal)
+Grafik Adı    : "Discharge" veya "Vout Bleed"
+
+DEĞER ANLAMLARI:
+  • 0.0 = Deşarj KAPALI (MOSFET OFF, direnç devre dışı)
+         → Normal çalışma
+         → Çıkış kapasitörü korunuyor
+         
+  • 1.0 = Deşarj AKTİF (MOSFET ON, 5Ω direnç aktif)
+         → Vout → 5Ω → GND yolu açık
+         → Aşırı voltaj durumunda fazla enerji boşaltılıyor
+
+AKTİFLEŞME KOŞULLARI:
+  YÜKLÜ DURUM (load_state = YUKE_BAGLI):
+    - Aktivasyon: Vout > 13.0V
+    - Deaktivasyon: Vout ≤ 12.25V
+  
+  YÜKSÜZ DURUM (load_state ≠ YUKE_BAGLI):
+    - Aktivasyon: Vout > 13.5V
+    - Deaktivasyon: Vout ≤ 13.0V
+
+RATIONALE:
+  Yük ayrıldığında veya aşırı voltaj oluştuğunda, çıkış kapasitöründeki
+  fazla enerjiyi 5Ω direnç üzerinden boşaltarak sistemin kilitlenmesini önler.
+
+
+
+
+
+
+
+
+────────────────────────────────────────────────────────────────────────────────
+Output 4: İŞLETİM MODU (OPERATING MODE)
+────────────────────────────────────────────────────────────────────────────────
+Sinyal Türü   : Analog (0, 1 veya 2)
+Birim         : - (kod)
+Grafik Adı    : "Operating Mode" veya "Conv Mode"
+
+DEĞER ANLAMLARI:
+  • 0.0 = BUCK MODU
+         → Vin > Vout (step-down)
+         → Buck PWM aktif, Boost PWM pasif
+         → Tipik: Vin = 15-45V, Vout = 12V
+         
+  • 1.0 = BUCK-BOOST MODU (veya geçiş modu)
+         → Vin ≈ Vout (yakın değerler)
+         → Her iki PWM de aktif olabilir
+         → Geçiş bölgesi veya güvenli başlangıç modu
+         
+  • 2.0 = BOOST MODU
+         → Vin < Vout (step-up)
+         → Boost PWM aktif, Buck PWM tam açık
+         → Tipik: Vin = 9-11V, Vout = 12V
+
+KULLANIM:
+  Dönüştürücünün hangi topolojide çalıştığını gösteren analog sinyal.
+  Vin/Vout oranına göre otomatik mod geçişi yapılır.
+
+
+
+
+
+
+
+
+────────────────────────────────────────────────────────────────────────────────
+Output 5: YÜKSÜZ DURUMU (LOAD_STATE_YUKSUZ)
+────────────────────────────────────────────────────────────────────────────────
+Sinyal Türü   : Dijital (0 veya 1)
+Birim         : - (mantıksal)
+Grafik Adı    : "No Load" veya "Yüksüz"
+
+DEĞER ANLAMLARI:
+  • 0.0 = Bu state AKTİF DEĞİL
+         → Sistem başka bir state'de (Yüke Hazır veya Yüke Bağlı)
+         
+  • 1.0 = YÜKSÜZ STATE AKTİF
+         → Sistem henüz startup'ta veya yük hiç bağlanmamış
+         → Vout stabilizasyonu bekleniyor
+         → Bu durumda yük AYRIK
+
+STATE MACHINE AÇIKLAMASI:
+  3-STATE LOAD MACHINE: YÜKSÜZ (0) → YÜKE_HAZIR (1) → YÜKE_BAGLI (2)
+  Bu sinyal ilk state'i (YÜKSÜZ) temsil eder.
+
+
+
+
+
+
+
+
+────────────────────────────────────────────────────────────────────────────────
+Output 6: YÜKE HAZIR DURUMU (LOAD_STATE_YUKE_HAZIR)
+────────────────────────────────────────────────────────────────────────────────
+Sinyal Türü   : Dijital (0 veya 1)
+Birim         : - (mantıksal)
+Grafik Adı    : "Ready to Load" veya "Yüke Hazır"
+
+DEĞER ANLAMLARI:
+  • 0.0 = Bu state AKTİF DEĞİL
+         → Sistem başka bir state'de (Yüksüz veya Yüke Bağlı)
+         
+  • 1.0 = YÜKE HAZIR STATE AKTİF
+         → Vout hedef aralığa ulaştı (tipik 12.3V-12.7V)
+         → Vin stabil
+         → Yüke bağlanmaya hazır, ama henüz bağlanmadı
+         → Kısa bir stabilite süresi sonra yüke bağlanacak
+
+STATE MACHINE AÇIKLAMASI:
+  Vout belirtilen aralıkta ve Vin stabil olduğunda bu state'e geçilir.
+  Belirli bir süre (tipik 100µs-1ms) stabil kalırsa YÜKE_BAGLI'ya geçer.
+
+
+
+
+
+
+
+
+────────────────────────────────────────────────────────────────────────────────
+Output 7: YÜKE BAĞLI DURUMU (LOAD_STATE_YUKE_BAGLI)
+────────────────────────────────────────────────────────────────────────────────
+Sinyal Türü   : Dijital (0 veya 1)
+Birim         : - (mantıksal)
+Grafik Adı    : "Load Connected" veya "Yüke Bağlı"
+
+DEĞER ANLAMLARI:
+  • 0.0 = Bu state AKTİF DEĞİL
+         → Yük bağlı değil (Yüksüz veya Yüke Hazır durumunda)
+         
+  • 1.0 = YÜKE BAĞLI STATE AKTİF
+         → Yük switch'i ON, yük güç alıyor
+         → Normal çalışma modu
+         → PID kontrolcü Vout'u regüle ediyor
+
+ÖNEMLI:
+  Output 5, 6 ve 7'den HER AN SADECE BİRİ "1" olabilir!
+  Üçü aynı anda 0 veya birden fazlası 1 ise → HATA veya başlangıç durumu.
+
+
+
+
+
+
+
+
+
+────────────────────────────────────────────────────────────────────────────────
+Output 8: VOUT HEDEF DEĞERİ (pid_target_dynamic)
+────────────────────────────────────────────────────────────────────────────────
+Sinyal Türü   : Analog
+Birim         : Volt [V]
+Grafik Adı    : "Vout Target" veya "Vref"
+
+DEĞER ANLAMLARI:
+  • Değer = PID kontrolcünün hedeflediği Vout değeri
+  • Tipik değerler:
+      - 13.0V: Yüksüz durum hedefi
+      - 12.1V: Yüklü durum hedefi (VOUT_TARGET)
+  • Soft-start sırasında rampa ile artar
+
+KULLANIM:
+  PID hata hesaplamasında kullanılan referans değeri.
+  Bu değer dinamik olarak değişebilir:
+    - Startup'ta düşük başlayıp hedefe rampa yapar
+    - Yük durumuna göre farklı hedefler olabilir
+
+
+
+
+
+
+
+
+────────────────────────────────────────────────────────────────────────────────
+Output 9: SİSTEM DURUMU (sys_state)
+────────────────────────────────────────────────────────────────────────────────
+Sinyal Türü   : Analog (basamak fonksiyonu)
+Birim         : - (ölçeklendirilmiş kod)
+Grafik Adı    : "System State" veya "Sys State"
+
+ÖLÇEKLEME:
+  OutputSignal = sys_state × 0.3V
+  
+DEĞER ANLAMLARI:
+  • 0.0V (sys_state = 0) = IDLE / BAŞLANGIÇ
+  • 0.3V (sys_state = 1) = SOFT-START
+  • 0.6V (sys_state = 2) = RUN (normal çalışma)
+  • 0.9V (sys_state = 3) = FAULT (hata durumu)
+  • ... (diğer durumlar varsa benzer şekilde)
+
+OKUMA:
+  Scope'ta görülen voltaj değerini 0.3'e bölün → sys_state kodu
+  Örnek: 0.6V görüyorsanız → 0.6 / 0.3 = 2 → RUN durumu
+
+
+
+
+
+
+
+
+────────────────────────────────────────────────────────────────────────────────
+Output 10: SOFT-START FAZI (ss.phase)
+────────────────────────────────────────────────────────────────────────────────
+Sinyal Türü   : Analog (basamak fonksiyonu)
+Birim         : - (ölçeklendirilmiş kod)
+Grafik Adı    : "SS Phase" veya "Soft-Start Phase"
+
+ÖLÇEKLEME:
+  OutputSignal = ss.phase × 0.3V
+  
+DEĞER ANLAMLARI (9-fazlı soft-start):
+  • 0.0V (phase = 0) = INIT (başlangıç)
+  • 0.3V (phase = 1) = PRECHARGE (ön şarj)
+  • 0.6V (phase = 2) = RAMP_UP (rampa yükseliş)
+  • 0.9V (phase = 3) = SETTLE (yerleşme)
+  • 1.2V (phase = 4) = VERIFY (doğrulama)
+  • 1.5V (phase = 5) = COMPLETE (tamamlandı → RUN)
+  • ... (diğer fazlar varsa)
+
+OKUMA:
+  Scope'ta görülen voltaj değerini 0.3'e bölün → phase numarası
+  Örnek: 0.9V görüyorsanız → 0.9 / 0.3 = 3 → SETTLE fazı
+
+
+
+
+
+
+
+
+────────────────────────────────────────────────────────────────────────────────
+Output 11: FİLTRELİ VIN (Ölçeklenmiş)
+────────────────────────────────────────────────────────────────────────────────
+Sinyal Türü   : Analog
+Birim         : Volt (ölçeklenmiş)
+Grafik Adı    : "Vin Scaled" veya "Filt Vin"
+
+ÖLÇEKLEME:
+  OutputSignal = filt_vin × 0.02475
+  
+TERS ÇEVİRME (Gerçek Vin'i bulma):
+  Gerçek Vin = Scope değeri / 0.02475
+  
+ÖRNEK DEĞERLER:
+  • Scope'ta 0.2475V → Gerçek Vin = 10V
+  • Scope'ta 0.3713V → Gerçek Vin = 15V
+  • Scope'ta 0.5940V → Gerçek Vin = 24V
+  • Scope'ta 0.8910V → Gerçek Vin = 36V
+  • Scope'ta 0.9900V → Gerçek Vin = 40V
+
+KULLANIM:
+  IIR filtreden geçirilmiş giriş voltajı.
+  Gürültü ve spike'lar bu sinyalde azaltılmış olur.
+  DAC ile ölçüm için ölçeklendirilmiş (3.3V aralığına sığdırılmış).
+
+
+
+
+
+
+
+
+────────────────────────────────────────────────────────────────────────────────
+Output 12: PID P-TERİMİ (Oransal Bileşen)
+────────────────────────────────────────────────────────────────────────────────
+Sinyal Türü   : Analog
+Birim         : - (PID iç hesaplama)
+Grafik Adı    : "P Term" veya "Proportional"
+
+DEĞER ANLAMLARI:
+  • Pozitif değer = Vout < Hedef → duty artırılmalı
+  • Negatif değer = Vout > Hedef → duty azaltılmalı
+  • Sıfıra yakın = Vout ≈ Hedef → stabil durum
+
+HESAPLAMA:
+  P_term = Kp × error
+  error = (Vout_Target - Vout_Actual)
+
+KULLANIM:
+  PID debug için. P terimi anlık hataya doğrudan orantılı tepki gösterir.
+  Çok büyükse → Kp çok yüksek, osilasyona neden olabilir.
+
+
+
+
+
+
+
+
+────────────────────────────────────────────────────────────────────────────────
+Output 13: PID I-TERİMİ (İntegral Bileşen)
+────────────────────────────────────────────────────────────────────────────────
+Sinyal Türü   : Analog
+Birim         : - (PID iç hesaplama)
+Grafik Adı    : "I Term" veya "Integral"
+
+DEĞER ANLAMLARI:
+  • Pozitif artış = Sürekli pozitif hata birikimi
+  • Negatif artış = Sürekli negatif hata birikimi
+  • Sabit = Stabil durum, hata yok
+
+HESAPLAMA:
+  I_term = Ki × Σ(error × dt)
+  Zamanla hata birikimini tutar
+
+KULLANIM:
+  PID debug için. I terimi steady-state hatayı elimine eder.
+  • Çok hızlı artıyorsa → Ki çok yüksek, osilasyon riski
+  • Çok yavaş değişiyorsa → Ki çok düşük, yavaş tepki
+  • Satüre oluyorsa (max/min'e yapışmış) → wind-up problemi
+
+
+
+
+
+
+
+
+────────────────────────────────────────────────────────────────────────────────
+Output 14: PID D-TERİMİ (Türevsel Bileşen) + OFFSET
+────────────────────────────────────────────────────────────────────────────────
+Sinyal Türü   : Analog
+Birim         : - (PID iç hesaplama, 1.65V offset)
+Grafik Adı    : "D Term" veya "Derivative"
+
+ÖLÇEKLEME:
+  OutputSignal = debug_d_term + 1.65V
+  (Negatif değerleri gösterebilmek için 1.65V offset eklendi)
+
+TERS ÇEVİRME (Gerçek D-terimi):
+  Gerçek D_term = Scope değeri - 1.65V
+
+DEĞER ANLAMLARI:
+  • > 1.65V → D_term pozitif → Hata artıyor → Fren uygula
+  • = 1.65V → D_term ≈ 0 → Hata sabit → Normal durum
+  • < 1.65V → D_term negatif → Hata azalıyor → Sistem düzeliyor
+
+HESAPLAMA:
+  D_term = Kd × d(error)/dt
+  Hatanın değişim hızına tepki verir
+
+KULLANIM:
+  PID debug için. D terimi aşırı sapmaları (overshoot) önler.
+  Ani spike'lar normal - Vout değişiminin türevini gösterir.
+
+
+
+
+
+
+
+
+
+────────────────────────────────────────────────────────────────────────────────
+Output 15: BUCK DUTY CYCLE (timer_a_duty)
+────────────────────────────────────────────────────────────────────────────────
+Sinyal Türü   : Analog
+Birim         : - (0.0 ile 1.0 arası)
+Grafik Adı    : "Buck Duty" veya "Timer A"
+
+DEĞER ANLAMLARI:
+  • 0.0 (0%) = Buck HO tamamen KAPALI (Q1 OFF, Q2 ON)
+              → Çıkışa enerji aktarılmıyor
+              → Freewheeling modu
+              
+  • 0.5 (50%) = Buck HO yarı süre AÇIK
+              → Tipik Vin=24V, Vout=12V'da beklenen değer
+              → D ≈ Vout/Vin = 12/24 = 0.5
+              
+  • 1.0 (100%) = Buck HO tamamen AÇIK (Q1 ON, Q2 OFF)
+              → Maksimum enerji aktarımı
+              → Boost modunda buck 100%'de kalır
+
+ANAHTAR TOPOLOJİSİ:
+  Buck Half-Bridge: Q1 (HO/Master) - Q2 (LO/Slave)
+  timer_a_duty = Q1 duty cycle
+  Q2 = (1 - Q1_duty) - dead_time (donanımda otomatik)
+
+
+
+
+
+
+
+
+────────────────────────────────────────────────────────────────────────────────
+Output 16: BOOST DUTY CYCLE (timer_b_duty)
+────────────────────────────────────────────────────────────────────────────────
+Sinyal Türü   : Analog
+Birim         : - (0.0 ile 1.0 arası)
+Grafik Adı    : "Boost Duty" veya "Timer B"
+
+DEĞER ANLAMLARI:
+  • 0.0 (0%) = Boost LO tamamen KAPALI (Q3 OFF, Q4 ON)
+              → Buck modunda beklenen değer
+              → Boost half-bridge pasif
+              
+  • 0.5 (50%) = Boost LO yarı süre AÇIK
+              → Buck-Boost geçiş bölgesinde görülebilir
+              
+  • ~0.9 (90%) = Boost LO yaklaşık tam AÇIK
+              → Boost modunda beklenen değer
+              → D_boost ≈ 1 - (Vin/Vout) = 1 - (9/12) ≈ 0.25
+              → (Dikkat: PLECS'te ters mantık olabilir)
+
+ANAHTAR TOPOLOJİSİ:
+  Boost Half-Bridge: Q3 (LO/Master) - Q4 (HO/Slave)
+  timer_b_duty = Q3 duty cycle
+  Q4 = (1 - Q3_duty) - dead_time (donanımda otomatik)
+
+
+
+
+
+
+
+
+================================================================================
+                        PLECS SCOPE KULLANIM İPUÇLARI
+================================================================================
+
+1. SİNYAL GRUPLAMA ÖNERİLERİ:
+   ────────────────────────────
+   Scope 1: Voltajlar
+     - Input: Vin, Vout
+     - Output 11: Filt Vin (ölçekli)
+     - Output 8: Vout Target
+   
+   Scope 2: Akımlar
+     - Input: Iin, Iind, Iout
+   
+   Scope 3: Durum Makinesi
+     - Output 5, 6, 7: Load States (üst üste veya ayrı)
+     - Output 9: System State
+     - Output 10: SS Phase
+   
+   Scope 4: PWM ve Kontrol
+     - Output 15: Buck Duty
+     - Output 16: Boost Duty
+     - Output 4: Operating Mode
+   
+   Scope 5: Koruma Sinyalleri
+     - Output 2: Shutdown
+     - Output 3: Discharge
+   
+   Scope 6: PID Debug
+     - Output 12: P Term
+     - Output 13: I Term
+     - Output 14: D Term (1.65V offset'li)
+
+2. ÖLÇEKLİ SİNYALLERİ OKUMA:
+   ────────────────────────────
+   Output 9  (Sys State): Değer / 0.3 = State numarası
+   Output 10 (SS Phase):  Değer / 0.3 = Phase numarası
+   Output 11 (Filt Vin):  Değer / 0.02475 = Gerçek Vin [V]
+   Output 14 (D Term):    Değer - 1.65 = Gerçek D terimi
+
+3. SORUN GİDERME İPUÇLARI:
+   ────────────────────────────
+   • Vout stabil değil → PID terimlerini kontrol et (Output 12-14)
+   • Yük bağlanmıyor → Load state'leri takip et (Output 5-7)
+   • Sistem FAULT'a giriyor → System state'i izle (Output 9)
+   • Duty satüre → Operating mode'u kontrol et (Output 4)
+
+
+
+
+
+
+
+
+================================================================================
+                                 ÖZET TABLO
+================================================================================
+
+  Output | Sinyal Adı         | Tip     | Değer Aralığı      | Açıklama
+  -------+--------------------+---------+--------------------+----------------------
+    2    | Shutdown           | Dijital | 0 veya 1           | 0=Yük ayrık, 1=Bağlı
+    3    | Discharge          | Dijital | 0 veya 1           | 0=OFF, 1=5Ω aktif
+    4    | Operating Mode     | Analog  | 0, 1 veya 2        | 0=Buck,1=BB,2=Boost
+    5    | Yüksüz State       | Dijital | 0 veya 1           | Load state = 0
+    6    | Yüke Hazır State   | Dijital | 0 veya 1           | Load state = 1
+    7    | Yüke Bağlı State   | Dijital | 0 veya 1           | Load state = 2
+    8    | Vout Target        | Analog  | ~12.1-13 V         | PID hedef voltaj
+    9    | Sys State (×0.3)   | Analog  | 0-1.5+ V           | Sistem durumu kodu
+   10    | SS Phase (×0.3)    | Analog  | 0-1.8+ V           | Soft-start fazı
+   11    | Filt Vin (×0.025)  | Analog  | 0.22-0.99 V        | Ölçekli giriş voltajı
+   12    | P Term             | Analog  | -1...+1 tipik      | PID oransal bileşen
+   13    | I Term             | Analog  | Birikimli          | PID integral bileşen
+   14    | D Term (+1.65V)    | Analog  | 0-3.3V (1.65=sıfır)| PID türev bileşen
+   15    | Buck Duty          | Analog  | 0.0 - 1.0          | Buck HO duty cycle
+   16    | Boost Duty         | Analog  | 0.0 - 1.0          | Boost LO duty cycle
+
+================================================================================
+                        BELGE SONU - V8.3 MISRA-C
+================================================================================
